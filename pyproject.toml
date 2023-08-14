@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "super-mario-ai"
+version = "0.1.0"
+description = ""
+authors = ["Quang Khanh Hua (Henry) <henry@khanhhua2102.com>"]
+readme = "README.md"
+packages = [{include = "super_mario_ai"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+gym-super-mario-bros = "^7.4.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
