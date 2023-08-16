@@ -2,7 +2,7 @@
 name = "super-mario-ai"
 version = "0.1.0"
 description = ""
-authors = ["Quang Khanh Hua (Henry) <henry@khanhhua2102.com>"]
+authors = ["Yin Min Aung <ivannoxic632@gmail.com>"]
 readme = "README.md"
 packages = [{include = "super_mario_ai"}]
 
