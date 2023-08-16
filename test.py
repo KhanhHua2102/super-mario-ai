@@ -21,7 +21,7 @@ done = True
 
 env.reset()
 
-for _idx in range(1000):
+for _idx in range(20000):
     obs, reward, done, info = env.step([1])
 
     if done:
