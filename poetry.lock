@@ -264,6 +264,28 @@ files = [
 ]
 
 [[package]]
+name = "easyprocess"
+version = "1.1"
+description = "Easy to use Python subprocess interface."
+optional = false
+python-versions = "*"
+files = [
+    {file = "EasyProcess-1.1-py3-none-any.whl", hash = "sha256:82eed523a0a5eb12a81fa4eacd9f342caeb3f900eb4b798740e6696ad07e63f9"},
+    {file = "EasyProcess-1.1.tar.gz", hash = "sha256:885898302a57aab948973e8b5d32a4229392b9fb2d986ab1d4ffd590e5ba90ec"},
+]
+
+[[package]]
+name = "entrypoint2"
+version = "1.1"
+description = "easy to use command-line interface for python modules"
+optional = false
+python-versions = "*"
+files = [
+    {file = "entrypoint2-1.1-py2.py3-none-any.whl", hash = "sha256:eeb8c327bdb65cdd1668c023a6b110b7e3d1a046fb05e043861ebd9264b3a257"},
+    {file = "entrypoint2-1.1.tar.gz", hash = "sha256:fc0b7fe7b21acdab47a585ab9407ca7e5c4f96cb6888575db6b0ceb91f0e105a"},
+]
+
+[[package]]
 name = "executing"
 version = "1.2.0"
 description = "Get the currently executing AST node of a frame, and other information"
@@ -552,6 +574,21 @@ qa = ["flake8 (==5.0.4)", "mypy (==0.971)", "types-setuptools (==67.2.0.1)"]
 testing = ["Django (<3.1)", "attrs", "colorama", "docopt", "pytest (<7.0.0)"]
 
 [[package]]
+name = "jeepney"
+version = "0.8.0"
+description = "Low-level, pure Python DBus protocol wrapper."
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "jeepney-0.8.0-py3-none-any.whl", hash = "sha256:c0a454ad016ca575060802ee4d590dd912e35c122fa04e70306de3d076cce755"},
+    {file = "jeepney-0.8.0.tar.gz", hash = "sha256:5efe48d255973902f6badc3ce55e2aa6c5c3b3bc642059ef3a91247bcfcc5806"},
+]
+
+[package.extras]
+test = ["async-timeout", "pytest", "pytest-asyncio (>=0.17)", "pytest-trio", "testpath", "trio"]
+trio = ["async_generator", "trio"]
+
+[[package]]
 name = "jinja2"
 version = "3.1.2"
 description = "A very fast and expressive template engine."
@@ -822,6 +859,21 @@ files = [
 traitlets = "*"
 
 [[package]]
+name = "mouseinfo"
+version = "0.1.3"
+description = "An application to display XY position and RGB color information for the pixel currently under the mouse. Works on Python 2 and 3."
+optional = false
+python-versions = "*"
+files = [
+    {file = "MouseInfo-0.1.3.tar.gz", hash = "sha256:2c62fb8885062b8e520a3cce0a297c657adcc08c60952eb05bc8256ef6f7f6e7"},
+]
+
+[package.dependencies]
+pyperclip = "*"
+python3-Xlib = {version = "*", markers = "platform_system == \"Linux\" and python_version >= \"3.0\""}
+rubicon-objc = {version = "*", markers = "platform_system == \"Darwin\""}
+
+[[package]]
 name = "mpmath"
 version = "1.3.0"
 description = "Python library for arbitrary-precision floating-point arithmetic"
@@ -837,6 +889,17 @@ develop = ["codecov", "pycodestyle", "pytest (>=4.6)", "pytest-cov", "wheel"]
 docs = ["sphinx"]
 gmpy = ["gmpy2 (>=2.1.0a4)"]
 tests = ["pytest (>=4.6)"]
+
+[[package]]
+name = "mss"
+version = "9.0.1"
+description = "An ultra fast cross-platform multiple screenshots module in pure python using ctypes."
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "mss-9.0.1-py3-none-any.whl", hash = "sha256:7ee44db7ab14cbea6a3eb63813c57d677a109ca5979d3b76046e4bddd3ca1a0b"},
+    {file = "mss-9.0.1.tar.gz", hash = "sha256:6eb7b9008cf27428811fa33aeb35f3334db81e3f7cc2dd49ec7c6e5a94b39f12"},
+]
 
 [[package]]
 name = "nes-py"
@@ -1211,6 +1274,26 @@ files = [
 tests = ["pytest"]
 
 [[package]]
+name = "pyautogui"
+version = "0.9.54"
+description = "PyAutoGUI lets Python control the mouse and keyboard, and other GUI automation tasks. For Windows, macOS, and Linux, on Python 3 and 2."
+optional = false
+python-versions = "*"
+files = [
+    {file = "PyAutoGUI-0.9.54.tar.gz", hash = "sha256:dd1d29e8fd118941cb193f74df57e5c6ff8e9253b99c7b04f39cfc69f3ae04b2"},
+]
+
+[package.dependencies]
+mouseinfo = "*"
+pygetwindow = ">=0.0.5"
+pymsgbox = "*"
+pyobjc-core = {version = "*", markers = "platform_system == \"Darwin\""}
+pyobjc-framework-quartz = {version = "*", markers = "platform_system == \"Darwin\""}
+pyscreeze = ">=0.1.21"
+python3-Xlib = {version = "*", markers = "platform_system == \"Linux\" and python_version >= \"3.0\""}
+pytweening = ">=1.0.4"
+
+[[package]]
 name = "pycparser"
 version = "2.21"
 description = "C parser in Python"
@@ -1220,6 +1303,19 @@ files = [
     {file = "pycparser-2.21-py2.py3-none-any.whl", hash = "sha256:8ee45429555515e1f6b185e78100aea234072576aa43ab53aefcae078162fca9"},
     {file = "pycparser-2.21.tar.gz", hash = "sha256:e644fdec12f7872f86c58ff790da456218b10f863970249516d60a5eaca77206"},
 ]
+
+[[package]]
+name = "pygetwindow"
+version = "0.0.9"
+description = "A simple, cross-platform module for obtaining GUI information on application's windows."
+optional = false
+python-versions = "*"
+files = [
+    {file = "PyGetWindow-0.0.9.tar.gz", hash = "sha256:17894355e7d2b305cd832d717708384017c1698a90ce24f6f7fbf0242dd0a688"},
+]
+
+[package.dependencies]
+pyrect = "*"
 
 [[package]]
 name = "pyglet"
@@ -1247,6 +1343,74 @@ files = [
 plugins = ["importlib-metadata"]
 
 [[package]]
+name = "pymsgbox"
+version = "1.0.9"
+description = "A simple, cross-platform, pure Python module for JavaScript-like message boxes."
+optional = false
+python-versions = "*"
+files = [
+    {file = "PyMsgBox-1.0.9.tar.gz", hash = "sha256:2194227de8bff7a3d6da541848705a155dcbb2a06ee120d9f280a1d7f51263ff"},
+]
+
+[[package]]
+name = "pyobjc-core"
+version = "9.2"
+description = "Python<->ObjC Interoperability Module"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "pyobjc-core-9.2.tar.gz", hash = "sha256:d734b9291fec91ff4e3ae38b9c6839debf02b79c07314476e87da8e90b2c68c3"},
+    {file = "pyobjc_core-9.2-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:fa674a39949f5cde8e5c7bbcd24496446bfc67592b028aedbec7f81dc5fc4daa"},
+    {file = "pyobjc_core-9.2-cp311-cp311-macosx_10_9_universal2.whl", hash = "sha256:bbc8de304ee322a1ee530b4d2daca135a49b4a49aa3cedc6b2c26c43885f4842"},
+    {file = "pyobjc_core-9.2-cp312-cp312-macosx_10_9_universal2.whl", hash = "sha256:0fa950f092673883b8bd28bc18397415cabb457bf410920762109b411789ade9"},
+    {file = "pyobjc_core-9.2-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:586e4cae966282eaa61b21cae66ccdcee9d69c036979def26eebdc08ddebe20f"},
+    {file = "pyobjc_core-9.2-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:41189c2c680931c0395a55691763c481fc681f454f21bb4f1644f98c24a45954"},
+    {file = "pyobjc_core-9.2-cp38-cp38-macosx_11_0_universal2.whl", hash = "sha256:2d23ee539f2ba5e9f5653d75a13f575c7e36586fc0086792739e69e4c2617eda"},
+    {file = "pyobjc_core-9.2-cp39-cp39-macosx_10_9_universal2.whl", hash = "sha256:b9809cf96678797acb72a758f34932fe8e2602d5ab7abec15c5ac68ddb481720"},
+]
+
+[[package]]
+name = "pyobjc-framework-cocoa"
+version = "9.2"
+description = "Wrappers for the Cocoa frameworks on macOS"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "pyobjc-framework-Cocoa-9.2.tar.gz", hash = "sha256:efd78080872d8c8de6c2b97e0e4eac99d6203a5d1637aa135d071d464eb2db53"},
+    {file = "pyobjc_framework_Cocoa-9.2-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:9e02d8a7cc4eb7685377c50ba4f17345701acf4c05b1e7480d421bff9e2f62a4"},
+    {file = "pyobjc_framework_Cocoa-9.2-cp311-cp311-macosx_10_9_universal2.whl", hash = "sha256:3b1e6287b3149e4c6679cdbccd8e9ef6557a4e492a892e80a77df143f40026d2"},
+    {file = "pyobjc_framework_Cocoa-9.2-cp312-cp312-macosx_10_9_universal2.whl", hash = "sha256:312977ce2e3989073c6b324c69ba24283de206fe7acd6dbbbaf3e29238a22537"},
+    {file = "pyobjc_framework_Cocoa-9.2-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:aae7841cf40c26dd915f4dd828f91c6616e6b7998630b72e704750c09e00f334"},
+    {file = "pyobjc_framework_Cocoa-9.2-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:739a421e14382a46cbeb9a883f192dceff368ad28ec34d895c48c0ad34cf2c1d"},
+    {file = "pyobjc_framework_Cocoa-9.2-cp38-cp38-macosx_11_0_universal2.whl", hash = "sha256:32d9ac1033fac1b821ddee8c68f972a7074ad8c50bec0bea9a719034c1c2fb94"},
+    {file = "pyobjc_framework_Cocoa-9.2-cp39-cp39-macosx_10_9_universal2.whl", hash = "sha256:b236bb965e41aeb2e215d4e98a5a230d4b63252c6d26e00924ea2e69540a59d6"},
+]
+
+[package.dependencies]
+pyobjc-core = ">=9.2"
+
+[[package]]
+name = "pyobjc-framework-quartz"
+version = "9.2"
+description = "Wrappers for the Quartz frameworks on macOS"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "pyobjc-framework-Quartz-9.2.tar.gz", hash = "sha256:f586183b9b9ef7f165f0444a7b714ed965d79f6e92617caaf869150dcfd5a72b"},
+    {file = "pyobjc_framework_Quartz-9.2-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:fb700b24088c8fe126dc0fb5ab4caa156e1e48c1a94839e6bd31c18b570ed53a"},
+    {file = "pyobjc_framework_Quartz-9.2-cp311-cp311-macosx_10_9_universal2.whl", hash = "sha256:6f983d26720f5f9786db5b525fc61b981be50d0456da1686fc533867d8990bb9"},
+    {file = "pyobjc_framework_Quartz-9.2-cp312-cp312-macosx_10_9_universal2.whl", hash = "sha256:5c512837c211df6a5214d4015f1f85524607952b0619789861c490900e3d5fb9"},
+    {file = "pyobjc_framework_Quartz-9.2-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:0f81de8c846034e725b7ceaa2fec0cca16463a56bdbe099d1d44f20112182431"},
+    {file = "pyobjc_framework_Quartz-9.2-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:ab346bbf410a0eaeca26d713ac1f13c014346cd1b7e195017c9502a17f6273db"},
+    {file = "pyobjc_framework_Quartz-9.2-cp38-cp38-macosx_11_0_universal2.whl", hash = "sha256:16a0e0677dae6db858cf19943e34deb0424776c9a90a7b67564d0e216861b20d"},
+    {file = "pyobjc_framework_Quartz-9.2-cp39-cp39-macosx_10_9_universal2.whl", hash = "sha256:67909baadcfc3ad2864539af3e94c2c024a29d01d9d6da22bbf9b84eac50064e"},
+]
+
+[package.dependencies]
+pyobjc-core = ">=9.2"
+pyobjc-framework-Cocoa = ">=9.2"
+
+[[package]]
 name = "pyparsing"
 version = "3.0.9"
 description = "pyparsing module - Classes and methods to define and execute parsing grammars"
@@ -1261,6 +1425,57 @@ files = [
 diagrams = ["jinja2", "railroad-diagrams"]
 
 [[package]]
+name = "pyperclip"
+version = "1.8.2"
+description = "A cross-platform clipboard module for Python. (Only handles plain text for now.)"
+optional = false
+python-versions = "*"
+files = [
+    {file = "pyperclip-1.8.2.tar.gz", hash = "sha256:105254a8b04934f0bc84e9c24eb360a591aaf6535c9def5f29d92af107a9bf57"},
+]
+
+[[package]]
+name = "pyrect"
+version = "0.2.0"
+description = "PyRect is a simple module with a Rect class for Pygame-like rectangular areas."
+optional = false
+python-versions = "*"
+files = [
+    {file = "PyRect-0.2.0.tar.gz", hash = "sha256:f65155f6df9b929b67caffbd57c0947c5ae5449d3b580d178074bffb47a09b78"},
+]
+
+[[package]]
+name = "pyscreenshot"
+version = "3.1"
+description = "python screenshot"
+optional = false
+python-versions = ">=3.4"
+files = [
+    {file = "pyscreenshot-3.1-py3-none-any.whl", hash = "sha256:73d406d41a0977125bdfd2f6488f0caf1394e84d1d4c1065d5e8b1400b307096"},
+    {file = "pyscreenshot-3.1.tar.gz", hash = "sha256:8c0e93f0aef66a6bfe55a86abfced6bd396ae4b4f6cc1e36f04a28ad2625594d"},
+]
+
+[package.dependencies]
+EasyProcess = "*"
+entrypoint2 = "*"
+jeepney = {version = "*", markers = "python_version > \"3.4\" and platform_system == \"Linux\""}
+mss = {version = "*", markers = "python_version > \"3.4\""}
+
+[[package]]
+name = "pyscreeze"
+version = "0.1.29"
+description = "A simple, cross-platform screenshot module for Python 2 and 3."
+optional = false
+python-versions = "*"
+files = [
+    {file = "PyScreeze-0.1.29.tar.gz", hash = "sha256:d074547795e128da176599a6d4470500e425d49b05cf22e9808a7984c3612836"},
+]
+
+[package.dependencies]
+Pillow = {version = ">=9.3.0", markers = "python_version == \"3.11\""}
+pyscreenshot = "*"
+
+[[package]]
 name = "python-dateutil"
 version = "2.8.2"
 description = "Extensions to the standard Python datetime module"
@@ -1273,6 +1488,26 @@ files = [
 
 [package.dependencies]
 six = ">=1.5"
+
+[[package]]
+name = "python3-xlib"
+version = "0.15"
+description = "Python3 X Library"
+optional = false
+python-versions = "*"
+files = [
+    {file = "python3-xlib-0.15.tar.gz", hash = "sha256:dc4245f3ae4aa5949c1d112ee4723901ade37a96721ba9645f2bfa56e5b383f8"},
+]
+
+[[package]]
+name = "pytweening"
+version = "1.0.7"
+description = "A collection of tweening / easing functions."
+optional = false
+python-versions = "*"
+files = [
+    {file = "pytweening-1.0.7.tar.gz", hash = "sha256:767134f1bf57b76c1ce9f692dd1cfc776d9a279de6724e8d04854508fd7ededb"},
+]
 
 [[package]]
 name = "pytz"
@@ -1412,6 +1647,21 @@ files = [
 
 [package.dependencies]
 cffi = {version = "*", markers = "implementation_name == \"pypy\""}
+
+[[package]]
+name = "rubicon-objc"
+version = "0.4.6"
+description = "A bridge between an Objective C runtime environment and Python."
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "rubicon-objc-0.4.6.tar.gz", hash = "sha256:faa6e373deab93ba70881354b884137b80403ce78fca2380f189cb338b350926"},
+    {file = "rubicon_objc-0.4.6-py3-none-any.whl", hash = "sha256:d4ec8892771bf7ac9569c1310c3beb80bb516c3df0323e6ffd63442b246dfddd"},
+]
+
+[package.extras]
+dev = ["pre-commit (==2.21.0)", "pre-commit (==3.2.2)", "pytest (==7.3.0)", "pytest-tldr (==0.2.5)", "setuptools-scm[toml] (==7.1.0)", "tox (==4.4.11)"]
+docs = ["furo (==2023.3.27)", "pyenchant (==3.2.2)", "sphinx (==6.1.3)", "sphinx-autobuild (==2021.3.14)", "sphinx-tabs (==3.4.1)", "sphinxcontrib-spelling (==8.0.0)"]
 
 [[package]]
 name = "shimmy"
@@ -1640,4 +1890,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "acab2ffd1ba23933fb694551e8f6765acf30b6e572d7cd8de79e998f3e43e030"
+content-hash = "f01fde4851c34a3d3d2ad0d45c40fbc075d1189fbcc05da2cd486b9772e183ba"

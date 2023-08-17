@@ -13,6 +13,8 @@ stable-baselines3 = "^2.0.0"
 shimmy = "^1.2.1"
 opencv-python = "^4.8.0.76"
 ipykernel = "^6.25.1"
+pyautogui = "^0.9.54"
+pillow = "^10.0.0"
 
 
 [build-system]
