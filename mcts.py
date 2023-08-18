@@ -2,10 +2,15 @@ import math
 import warnings
 
 import gym
-from gym_super_mario_bros.actions import SIMPLE_MOVEMENT
+from gym_super_mario_bros.actions import SIMPLE_MOVEMENT, RIGHT_ONLY
+from gym.wrappers.gray_scale_observation import GrayScaleObservation
+from stable_baselines3.common.vec_env import VecFrameStack
 from nes_py.wrappers import JoypadSpace
 
-from mario_states import Mario_States
+from mario_states import Mario_States, CUSTOM_MOVEMENT
+
+
+warnings.filterwarnings("ignore")
 
 
 class Node:
@@ -46,22 +51,25 @@ def expand(node: Node) -> Node:
     """
     # actions = node.state.get_actions()
     action = env.action_space.sample()
-    new_state = Mario_States(*env.step(action))
+    new_state = Mario_States(*env.step(action), action)
     new_node = Node(new_state, parent=node)
     node.children.append(new_node)
     return new_node
 
 
-def simulate(node: Node) -> int:
+def simulate(node: Node, action_limit: int) -> int:
     """
     The simulation function is used to play out a game from the current state in a completely random manner.
     It continues to select random actions until a terminal state is reached,
     and then returns the result of that terminal state.
     """
+    print("simulating")
     state = node.state.copy_state()
-    while not state.is_terminal():
+    while not state.is_terminal() and action_limit > 0:
         action = env.action_space.sample()
-        state = Mario_States(*env.step(action))
+        state = Mario_States(*env.step(action), action)
+        action_limit -= 1
+    print("end of simulation")
     return state.get_reward()
 
 
@@ -92,50 +100,70 @@ def best_child(node: Node) -> Node:
         return node
 
 
-def MCTS(root_node: Node, iterations: int) -> Mario_States:
+def MCTS(root_node: Node, iterations: int, action_limit: int):
     """
     This is the main function that implements the MCTS algorithm. 
     It takes the root state of the game and the number of iterations as inputs and 
     returns the best state found by MCTS after the specified number of iterations.
     """
     for iteration in range(iterations):
-        print(iteration)
-
+        print("\niteration:", iteration)
         env.reset()
+        limit = action_limit
 
         node = select(root_node)
-        if not node.state.is_terminal():
+        
+        print("selecting")
+        if not node.state.is_terminal() and limit > 0:
+            print("limit:", limit)
             if len(node.children) < env.action_space.n:
                 node = expand(node)
             else:
                 node = select(node)
+            limit -= 1
         
-        reward = simulate(node)
+        print("end of selection")
+
+        reward = simulate(node, 300)
         backpropagate(node, reward)
 
-        print(reward)
+        env.reset()
+
+        print(node.state)
 
     results = []
     # construct list of children from root node to leaf node
     while root_node.children:
         root_node = best_child(root_node)
-        results.append(root_node.state)
+        results.append((root_node.visits, root_node.value, root_node.state.action))
     
     # return the state of the leaf node with the highest value
-    return max(results, key=lambda n: n.reward)
+    return results
 
 
-warnings.filterwarnings("ignore")
 
-env = gym.make('SuperMarioBros-v0', apply_api_compatibility=True, render_mode="human")
-env = JoypadSpace(env, SIMPLE_MOVEMENT)
+env = gym.make('SuperMarioBros-v0', apply_api_compatibility=True, render_mode="rgb_array")
+env = JoypadSpace(env, CUSTOM_MOVEMENT)
+env = GrayScaleObservation(env, keep_dim=True)
+
 env.reset()
 obs, reward, terminated, truncated, info = env.step(0)
 
 
-iterations = 2
+iterations = 300
+action_limit = 1500
 
-root = Node(state=Mario_States(obs, reward, terminated, truncated, info))
-result = MCTS(root, iterations)
+root = Node(state=Mario_States(obs, reward, terminated, truncated, info, 0))
+results = MCTS(root, iterations, action_limit)
 
-print(result)
+
+action_list = []
+print("\nRESULT:\n")
+for state in results:
+    print(state[:2])
+    action_list.append(state[2])
+
+# export action list to file
+with open("action_list.txt", "w") as f:
+    for action in action_list:
+        f.write(str(action) + "\n")
