@@ -19,7 +19,7 @@ JoypadSpace.reset = lambda self, **kwargs: self.env.reset(**kwargs)
 env = gym.make('SuperMarioBros-v0', apply_api_compatibility=True, render_mode="human")
 env = JoypadSpace(env, CUSTOM_MOVEMENT)
 
-delay = 0.5
+delay = 0.01
 # read action list from file
 with open("action_list.txt", "r") as f:
     action_list = [int(line.strip()) for line in f.readlines()]
@@ -31,9 +31,10 @@ env.reset()
 for action in action_list:
     print("action:", action)
     obs, reward, terminated, truncated, info = env.step(action)
+    print(reward)
     
-    for i in range(12):
-        env.step(0)
+    # for i in range(12):
+    #     env.step(0)
     time.sleep(delay)
     done = terminated or truncated
     
