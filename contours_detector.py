@@ -65,3 +65,7 @@ def exist_pipe(obs):
             return center_x, center_y
     
     return None, None
+
+
+def one_enemy(obs):
+    return 7
