@@ -15,9 +15,6 @@ JoypadSpace.reset = lambda self, **kwargs: self.env.reset(**kwargs)
 env = gym.make('SuperMarioBros-v0', apply_api_compatibility=True, render_mode="human")
 env = JoypadSpace(env, SIMPLE_MOVEMENT)
 
-done = True
-
-env.reset()
 
 done = True
 env.reset()
