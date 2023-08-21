@@ -22,7 +22,7 @@ env = JoypadSpace(env, SIMPLE_MOVEMENT)
 # Random agent simulation
 done = True
 env.reset()
-for step in range(800):
+for step in range(1100):
     action = env.action_space.sample()
     obs, reward, terminated, truncated, info = env.step(action)
     done = terminated or truncated
@@ -36,8 +36,8 @@ cv2.imshow("obs_img", obs_img)
 cv2.waitKey(0)
 
 # select enemy's head and create a mask
-low = np.array([0, 54, 248])
-high = np.array([0, 56, 248])
+low = np.array([0, 168, 0])
+high = np.array([1, 168, 10])
 mask = cv2.inRange(obs_img, low, high)
 
 cv2.imshow("mask", mask)
@@ -50,7 +50,7 @@ contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 # Area of Mario's belly: 12 -> 33
 for contour in contours:
     print(cv2.contourArea(contour))
-    if cv2.contourArea(contour) < 33 and cv2.contourArea(contour) > 12:
+    if cv2.contourArea(contour) < 140 and cv2.contourArea(contour) > 135:
         print("Mario detected")
         # Draw a rectangle around the enemy's head
         x, y, w, h = cv2.boundingRect(contour)

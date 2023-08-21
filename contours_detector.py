@@ -67,5 +67,5 @@ def exist_pipe(obs):
     return None, None
 
 
-def one_enemy(obs):
-    return 7
+def exist_hole(obs):
+    pass
