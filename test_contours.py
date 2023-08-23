@@ -8,7 +8,7 @@ import time
 
 import warnings
 
-from contours_detector import mario_loc, exist_enemy, exist_pipe
+from contours_detector import mario_loc, exist_enemy, exist_pipe,find_nearest_pipe
 
 
 # Suppress all warnings (not recommended for production code)
@@ -24,11 +24,13 @@ delay = 0.008
 done = True
 env.reset()
 obs, reward, terminated, truncated, info = env.step(0)
-for step in range(600):
+for step in range(6000):
     # Mario's position
     x, _ = mario_loc(obs)
     y = info["y_pos"]
     # print(f"Mario ({x} | {y})")
+
+    
 
     x_enemy, y_enemy = exist_enemy(obs)
     if x_enemy is not None:
@@ -40,7 +42,11 @@ for step in range(600):
             time.sleep(delay)
             continue
     
-    x_pipe, y_pipe = exist_pipe(obs)
+
+    pipe_values = exist_pipe(obs)
+    x_pipe, y_pipe = find_nearest_pipe(x,pipe_values)
+
+
     if x_pipe is not None:
         # print(f"pipe ({x_pipe} | {y_pipe})")
         if y_pipe == 184: # short pipe
@@ -60,18 +66,19 @@ for step in range(600):
             if (x_pipe - x < 65 and x_pipe - x > 27) and y <= 79:
                 print(f"Mario ({x} | {y})")
                 print(f"pipe ({x_pipe} | {y_pipe})")
-                for _ in range(9):
-                    env.step(5)
+                for _ in range(50):
+                    env.step(2)
                     time.sleep(delay)
                 obs, reward, terminated, truncated, info = env.step(1)
                 time.sleep(delay)
                 continue
         else: # long pipe
             print("long pipe")
+            print(f"pipe ({x_pipe} | {y_pipe})")
             if (x_pipe - x < 75 and x_pipe - x > 27) and y <= 79:
                 print(f"Mario ({x} | {y})")
                 print(f"pipe ({x_pipe} | {y_pipe})")
-                for _ in range(12):
+                for _ in range(20):
                     obs, reward, terminated, truncated, info = env.step(5)
                     time.sleep(delay)
                 obs, reward, terminated, truncated, info = env.step(1)
