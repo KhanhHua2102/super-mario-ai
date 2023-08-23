@@ -135,19 +135,23 @@ def MCTS(root_node: Node, iterations: int, limit_per_iteration: int, limit_per_s
         print("rootnode child:", len(root.children))
         
         print("selecting process:")
+        
+        # ISSUE: NEED TO GO DOWN THE TREE UNTIL REACH THE LEAF NOD
         if not node.state.is_terminal() and limit > 0:
             print("limit:", limit)
             if len(node.children) < env.action_space.n:
                 print("expanding")
                 print("rootnode child:", len(root.children))
                 node = expand(node)
-                # ROOT_NODE CHILDREN DOES NOT UPDATED !!!
+                # ISSUE: ROOT_NODE CHILDREN DOES NOT UPDATED !!!
                 print("rootnode child:", len(root.children))
             else:
                 print("selecting")
                 node = select(node)
             limit -= 1
         
+
+
         print("end of selection\n")
 
         reward = simulate(node, limit_per_simulation)
@@ -159,6 +163,7 @@ def MCTS(root_node: Node, iterations: int, limit_per_iteration: int, limit_per_s
 
     results = []
     # construct list of children from root node to leaf node
+    # ISSUE: NOT RETURN THE CORRECT OPTIMAL PATH
     while root.children:
         root = best_child(root)
         results.append((root.visits, root.value, root.state.action))
@@ -169,7 +174,7 @@ def MCTS(root_node: Node, iterations: int, limit_per_iteration: int, limit_per_s
 
 
 
-env = gym.make('SuperMarioBros-v0', apply_api_compatibility=True, render_mode="rgb_array")
+env = gym.make('SuperMarioBros-v0', apply_api_compatibility=True, render_mode="human")
 env = JoypadSpace(env, CUSTOM_MOVEMENT)
 env = GrayScaleObservation(env, keep_dim=True)
 
@@ -178,9 +183,9 @@ obs, reward, terminated, truncated, info = env.step(0)
 
 
 delay = 0.005
-iterations = 5
+iterations = 15
 action_limit_per_iteration = 1500
-action_limit_per_simulation = 100
+action_limit_per_simulation = 150
 
 root = Node(state=Mario_States(obs, reward, terminated, truncated, info, 0))
 results = MCTS(root, iterations, action_limit_per_iteration, action_limit_per_simulation)

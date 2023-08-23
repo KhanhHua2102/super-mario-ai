@@ -93,5 +93,5 @@ def find_nearest_pipe(mario_x,mario_y,pipe_values):
     return closest_x,closest_y
 
 
-def one_enemy(obs):
-    return 7
+def exist_hole(obs):
+    pass

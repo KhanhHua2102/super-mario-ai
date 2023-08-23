@@ -19,7 +19,7 @@ JoypadSpace.reset = lambda self, **kwargs: self.env.reset(**kwargs)
 env = gym.make('SuperMarioBros-v0', apply_api_compatibility=True, render_mode="human")
 env = JoypadSpace(env, CUSTOM_MOVEMENT)
 
-delay = 0.01
+delay = 0.08
 # read action list from file
 with open("action_list.txt", "r") as f:
     action_list = [int(line.strip()) for line in f.readlines()]
