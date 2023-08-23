@@ -30,6 +30,8 @@ for step in range(6000):
     y = info["y_pos"]
     # print(f"Mario ({x} | {y})")
 
+    
+
     x_enemy, y_enemy = exist_enemy(obs)
     if x_enemy is not None:
         # print(f"enemy ({x_enemy} | {y_enemy})")
@@ -41,11 +43,8 @@ for step in range(6000):
             continue
     
 
-    # x_pipe, y_pipe = exist_pipe(obs)
-
     pipe_values = exist_pipe(obs)
-    print(x)
-    x_pipe, y_pipe = find_nearest_pipe(x,y,pipe_values)
+    x_pipe, y_pipe = find_nearest_pipe(x,pipe_values)
 
 
     if x_pipe is not None:

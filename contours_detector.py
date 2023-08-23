@@ -66,17 +66,14 @@ def exist_pipe(obs):
             center_y = y + h // 2
 
             pipe_values.append((center_x,center_y))
-    # print(pipe_values)
     return pipe_values
 
-def find_nearest_pipe(mario_x,mario_y,pipe_values):
+def find_nearest_pipe(mario_x,pipe_values):
     if len(pipe_values) == 0:
         return None,None
 
     closest_x = pipe_values[0][0]
     closest_y = pipe_values[0][1]
-
-    # closest_x, closest_y = sys.maxsize,sys.maxsize
 
     #only one pipe exists and the pipe is in front of the mario right now
     if len(pipe_values) == 1 and closest_x > mario_x:
@@ -84,7 +81,6 @@ def find_nearest_pipe(mario_x,mario_y,pipe_values):
 
     for pipe_value in pipe_values:  
         # less than other pipes but greater than the mario
-        print(pipe_value)
         # 24 168, 152 152
         if closest_x < pipe_value[0] and pipe_value[0] > mario_x and mario_x > closest_x:
             closest_x = pipe_value[0]
@@ -94,4 +90,13 @@ def find_nearest_pipe(mario_x,mario_y,pipe_values):
 
 
 def exist_hole(obs):
-    pass
+    obs_img = cv2.cvtColor(obs, cv2.COLOR_RGB2BGR)
+    low = np.array([247,79,0])
+    high = np.array([247,79,0])
+    mask = cv2.inRange(obs_img, low, high)
+    
+    contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    
+    
+
