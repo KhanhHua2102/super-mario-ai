@@ -7,8 +7,9 @@ import cv2
 import time
 
 import warnings
+import numpy as np
 
-from contours_detector import mario_loc, exist_enemy, exist_pipe,find_nearest_pipe,exist_hole
+from contours_detector import mario_loc, exist_enemy, exist_pipe,find_nearest_pipe,exist_small_hole
 
 CUSTOM_MOVEMENT = [
     ['NOOP'],
@@ -26,18 +27,38 @@ JoypadSpace.reset = lambda self, **kwargs: self.env.reset(**kwargs)
 env = gym.make('SuperMarioBros-v0', apply_api_compatibility=True, render_mode="human")
 env = JoypadSpace(env, SIMPLE_MOVEMENT)
 
-delay = 0.008
+delay = 0.0001
 
 done = True
 env.reset()
 obs, reward, terminated, truncated, info = env.step(0)
-for step in range(6000):
+for step in range(10000):
     # Mario's position
     x, _ = mario_loc(obs)
     y = info["y_pos"]
+
+    small_hole = exist_small_hole(obs)
+
+    if small_hole[0] - x < 3:
+        for i in range(8):
+            obs, reward, terminated, truncated, info = env.step(2)
+            obs, reward, terminated, truncated, info = env.step(2)
+            time.sleep(delay)
+
+
     # print(f"Mario ({x} | {y})")
-    width = exist_hole(x,y,obs)
-    print(width)
+    # width = exist_hole(x,y,obs)
+    
+    # if width is not None:
+    #     print("width:",width)
+
+    #     if width < 50:
+    #         for i in range(10):
+    #             obs, reward, terminated, truncated, info = env.step(2)
+    #     elif width > 100:
+    #         for i in range(15):
+    #             obs, reward, terminated, truncated, info = env.step(2)
+    #     time.sleep(delay)
 
     # if width is None:
     #     continue
@@ -45,9 +66,7 @@ for step in range(6000):
     #     obs, reward, terminated, truncated, info = env.step(2)
     #     time.sleep(delay)
 
-    if width is not None:
-        obs, reward, terminated, truncated, info = env.step(2)
-        time.sleep(delay)
+    
     # obs, reward, terminated, truncated, info = env.step(2)
     # time.sleep(delay)
 
@@ -57,8 +76,8 @@ for step in range(6000):
     if x_enemy is not None:
         # print(f"enemy ({x_enemy} | {y_enemy})")
         if (x_enemy - x < 32 and x_enemy - x > 28) and y <= 79:
-            print(f"Mario ({x} | {y})")
-            print(f"enemy ({x_enemy} | {y_enemy})")
+            # print(f"Mario ({x} | {y})")
+            # print(f"enemy ({x_enemy} | {y_enemy})")
             obs, reward, terminated, truncated, info = env.step(2)
             time.sleep(delay)
             continue
@@ -71,22 +90,22 @@ for step in range(6000):
     if x_pipe is not None:
         # print(f"pipe ({x_pipe} | {y_pipe})")
         if y_pipe == 184: # short pipe
-            print("short pipe")
+            # print("short pipe")
             if (x_pipe - x < 45 and x_pipe - x > 40) and y <= 79:
-                print(f"Mario ({x} | {y})")
-                print(f"pipe ({x_pipe} | {y_pipe})")
+                # print(f"Mario ({x} | {y})")
+                # print(f"pipe ({x_pipe} | {y_pipe})")
                 env.step(5)
                 time.sleep(delay)
                 obs, reward, terminated, truncated, info = env.step(1)
                 time.sleep(delay)
                 continue
         elif y_pipe == 168: # medium pipe
-            print("medium pipe")
-            print(f"pipe ({x_pipe} | {y_pipe})")
-            print(f"Mario ({x} | {y})")
+            # print("medium pipe")
+            # print(f"pipe ({x_pipe} | {y_pipe})")
+            # print(f"Mario ({x} | {y})")
             if (x_pipe - x < 65 and x_pipe - x > 27) and y <= 79:
-                print(f"Mario ({x} | {y})")
-                print(f"pipe ({x_pipe} | {y_pipe})")
+                # print(f"Mario ({x} | {y})")
+                # print(f"pipe ({x_pipe} | {y_pipe})")
                 for _ in range(50):
                     env.step(2)
                     time.sleep(delay)
@@ -94,17 +113,18 @@ for step in range(6000):
                 time.sleep(delay)
                 continue
         else: # long pipe
-            print("long pipe")
-            print(f"pipe ({x_pipe} | {y_pipe})")
+            # print("long pipe")
+            # print(f"pipe ({x_pipe} | {y_pipe})")
             if (x_pipe - x < 75 and x_pipe - x > 27) and y <= 79:
-                print(f"Mario ({x} | {y})")
-                print(f"pipe ({x_pipe} | {y_pipe})")
+                # print(f"Mario ({x} | {y})")
+                # print(f"pipe ({x_pipe} | {y_pipe})")
                 for _ in range(20):
                     obs, reward, terminated, truncated, info = env.step(5)
                     time.sleep(delay)
                 obs, reward, terminated, truncated, info = env.step(1)
                 time.sleep(delay)
                 continue
+   
 
     obs, reward, terminated, truncated, info = env.step(1)
     time.sleep(delay)
@@ -115,32 +135,34 @@ for step in range(6000):
 env.close()
 
 
+
 # obs_img = cv2.cvtColor(obs, cv2.COLOR_RGB2BGR)
+# # Read the template
+# template = cv2.imread("templates/hole8.png")
 
-# cv2.imshow("obs", obs_img)
-# cv2.waitKey(0)
+# # Loop through all the matching methods
+# match_method = [cv2.TM_SQDIFF, cv2.TM_SQDIFF_NORMED, cv2.TM_CCOEFF, cv2.TM_CCOEFF_NORMED]
+# for method in match_method:
+#     result = cv2.matchTemplate(obs_img, template, method)
+#     cv2.normalize( result, result, 0, 1, cv2.NORM_MINMAX, -1 )
 
-# low = np.array([0, 168, 0])
-# high = np.array([1, 168, 10])
-# mask = cv2.inRange(obs_img, low, high)
+#     # Find the location of the best match
+#     min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
 
-# cv2.imshow("mask", mask)
-# cv2.waitKey(0)
+#     if (method == cv2.TM_SQDIFF or method == cv2.TM_SQDIFF_NORMED):
+#         matchLoc = min_loc
+#     else:
+#         matchLoc = max_loc
 
-# contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-# # cont_img = cv2.drawContours(obs_img, contours, -1, (0, 0, 255), 2)
+#     pt1 = matchLoc
+#     pt2 = matchLoc[0] + template.shape[0], matchLoc[1] + template.shape[1]
+#     area = (pt1[0] - pt2[0]) * (pt1[1] - pt2[1])
 
-# # Area of pipe: 137.5
-# for contour in contours:
-#     print(cv2.contourArea(contour))
-#     if cv2.contourArea(contour) < 140 and cv2.contourArea(contour) > 135:
-#         x = contour[0][0][0]
-#         y = contour[0][0][1]
-#         x, y, w, h = cv2.boundingRect(contour)
-#         cv2.rectangle(obs_img, (x, y), (x + w, y + h), (255, 0, 0), 2)
+#     print(f"pt1: {pt1}, pt2: {pt2}\nArea: {area}\n")
 
+#     # Filter the results and draw the rectangle
+#     cv2.rectangle(obs_img, pt1, pt2, (0, 255, 0), 1)
 
-# cv2.imshow("obs_img", obs_img)
-# cv2.waitKey(0)
+# cv2.imshow("image_window", obs_img)
+# cv2.waitKey(30000)
 
-# cv2.destroyAllWindows()

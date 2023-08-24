@@ -35,9 +35,9 @@ obs_img = cv2.cvtColor(obs, cv2.COLOR_RGB2BGR)
 cv2.imshow("obs_img", obs_img)
 cv2.waitKey(0)
 
-# select enemy's head and create a mask
-low = np.array([0, 168, 0])
-high = np.array([1, 168, 10])
+# select small hole and create a mask
+low = np.array([252,136,104])
+high = np.array([252,136,104])
 mask = cv2.inRange(obs_img, low, high)
 
 cv2.imshow("mask", mask)
@@ -50,11 +50,11 @@ contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 # Area of Mario's belly: 12 -> 33
 for contour in contours:
     print(cv2.contourArea(contour))
-    if cv2.contourArea(contour) < 140 and cv2.contourArea(contour) > 135:
-        print("Mario detected")
-        # Draw a rectangle around the enemy's head
-        x, y, w, h = cv2.boundingRect(contour)
-        cv2.rectangle(obs_img, (x, y), (x + w, y + h), 255, 1)
+    # if cv2.contourArea(contour) < 140 and cv2.contourArea(contour) > 135:
+    print("hole detected")
+    # Draw a rectangle around the enemy's head
+    x, y, w, h = cv2.boundingRect(contour)
+    cv2.rectangle(obs_img, (x, y), (x + w, y + h), 255, 1)
 
 cv2.imshow("result", obs_img)
 cv2.waitKey(0)
