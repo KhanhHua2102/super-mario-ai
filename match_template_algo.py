@@ -17,13 +17,13 @@ warnings.filterwarnings("ignore")
 JoypadSpace.reset = lambda self, **kwargs: self.env.reset(**kwargs)
 
 # Initialize the environment and the agent
-env = gym.make('SuperMarioBros-v0', apply_api_compatibility=True, render_mode="rgb_array")
+env = gym.make('SuperMarioBros-v3', apply_api_compatibility=True, render_mode="rgb_array")
 env = JoypadSpace(env, SIMPLE_MOVEMENT)
 
 # Random agent simulation
 done = True
 env.reset()
-for step in range(800):
+for step in range(1200):
     action = env.action_space.sample()
     obs, reward, terminated, truncated, info = env.step(action)
     done = terminated or truncated
@@ -33,7 +33,7 @@ env.close()
 # Convert the observation to BGR format for cv2 library
 obs_img = cv2.cvtColor(obs, cv2.COLOR_RGB2BGR)
 # Read the template
-template = cv2.imread("templates/enemy.png")
+template = cv2.imread("templates/enemy-v3-4.png")
 
 # obs_img_gray = cv2.cvtColor(obs_img, cv2.COLOR_BGR2GRAY)
 # template_gray = cv2.cvtColor(template, cv2.COLOR_BGR2GRAY)
@@ -59,7 +59,7 @@ for method in match_method:
     print(f"pt1: {pt1}, pt2: {pt2}\nArea: {area}\n")
 
     # Filter the results and draw the rectangle
-    if(area < 300 and area > 200):
+    if(area < 3000 and area > 0):
         cv2.rectangle(obs_img, pt1, pt2, (0, 255, 0), 1)
 
 cv2.imshow("image_window", obs_img)

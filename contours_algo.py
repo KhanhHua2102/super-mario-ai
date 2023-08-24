@@ -15,14 +15,14 @@ warnings.filterwarnings("ignore")
 JoypadSpace.reset = lambda self, **kwargs: self.env.reset(**kwargs)
 
 # Initialize the environment and the agent
-env = gym.make('SuperMarioBros-v0', apply_api_compatibility=True, render_mode="rgb_array")
+env = gym.make('SuperMarioBros-v3', apply_api_compatibility=True, render_mode="rgb_array")
 env = JoypadSpace(env, SIMPLE_MOVEMENT)
 
 
 # Random agent simulation
 done = True
 env.reset()
-for step in range(1100):
+for step in range(2000):
     action = env.action_space.sample()
     obs, reward, terminated, truncated, info = env.step(action)
     done = terminated or truncated
@@ -36,8 +36,10 @@ cv2.imshow("obs_img", obs_img)
 cv2.waitKey(0)
 
 # select enemy's head and create a mask
-low = np.array([0, 168, 0])
-high = np.array([1, 168, 10])
+# low = np.array([0,52,245])
+# high = np.array([2,57,250])
+low = np.array([0, 75, 226])
+high = np.array([16, 100, 230])
 mask = cv2.inRange(obs_img, low, high)
 
 cv2.imshow("mask", mask)
@@ -50,7 +52,7 @@ contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 # Area of Mario's belly: 12 -> 33
 for contour in contours:
     print(cv2.contourArea(contour))
-    if cv2.contourArea(contour) < 140 and cv2.contourArea(contour) > 135:
+    if cv2.contourArea(contour) < 300 and cv2.contourArea(contour) > 0:
         print("Mario detected")
         # Draw a rectangle around the enemy's head
         x, y, w, h = cv2.boundingRect(contour)
