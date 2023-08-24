@@ -107,6 +107,32 @@ def exist_small_hole(obs):
             matchLoc = max_loc
 
         return matchLoc
+    
+def exist_brick(mario_x,obs):
+    obs_img = cv2.cvtColor(obs, cv2.COLOR_RGB2BGR)
+    # Read the template
+    template = cv2.imread("templates/brick1.png")
+
+    # Loop through all the matching methods
+    match_method = [cv2.TM_SQDIFF, cv2.TM_SQDIFF_NORMED, cv2.TM_CCOEFF, cv2.TM_CCOEFF_NORMED]
+    for method in match_method:
+        result = cv2.matchTemplate(obs_img, template, method)
+        cv2.normalize( result, result, 0, 1, cv2.NORM_MINMAX, -1 )
+
+        # Find the location of the best match
+        min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
+
+        if (method == cv2.TM_SQDIFF or method == cv2.TM_SQDIFF_NORMED):
+            matchLoc = min_loc
+        else:
+            matchLoc = max_loc
+
+        if mario_x > matchLoc[0]:
+            return None
+
+        return matchLoc
+    
+
 
 
     

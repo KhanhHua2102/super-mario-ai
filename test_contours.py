@@ -9,7 +9,7 @@ import time
 import warnings
 import numpy as np
 
-from contours_detector import mario_loc, exist_enemy, exist_pipe,find_nearest_pipe,exist_small_hole
+from contours_detector import mario_loc, exist_enemy, exist_pipe,find_nearest_pipe,exist_small_hole,exist_brick
 
 CUSTOM_MOVEMENT = [
     ['NOOP'],
@@ -32,24 +32,17 @@ delay = 0.0001
 done = True
 env.reset()
 obs, reward, terminated, truncated, info = env.step(0)
-for step in range(10000):
+for step in range(500):
     # Mario's position
     x, _ = mario_loc(obs)
     y = info["y_pos"]
-
-    small_hole = exist_small_hole(obs)
-
-    if small_hole[0] - x < 3:
-        for i in range(8):
-            obs, reward, terminated, truncated, info = env.step(2)
-            obs, reward, terminated, truncated, info = env.step(2)
-            time.sleep(delay)
+    print(f"Mario ({x} | {y})")
 
     x_enemy, y_enemy = exist_enemy(obs)
     if x_enemy is not None:
         # print(f"enemy ({x_enemy} | {y_enemy})")
         if (x_enemy - x < 32 and x_enemy - x > 28) and y <= 79:
-            # print(f"Mario ({x} | {y})")
+            print(f"Mario ({x} | {y})")
             # print(f"enemy ({x_enemy} | {y_enemy})")
             obs, reward, terminated, truncated, info = env.step(2)
             time.sleep(delay)
@@ -92,11 +85,32 @@ for step in range(10000):
                 print(f"Mario ({x} | {y})")
                 print(f"pipe ({x_pipe} | {y_pipe})")
                 for _ in range(20):
-                    obs, reward, terminated, truncated, info = env.step(5)
+                    obs, reward, terminated, truncated, info = env.step(2)
                     time.sleep(delay)
                 obs, reward, terminated, truncated, info = env.step(1)
                 time.sleep(delay)
                 continue
+
+    # obs, reward, terminated, truncated, info = env.step(2)
+
+
+    small_hole = exist_small_hole(obs)
+
+    if small_hole[0] - x < 3:
+        for i in range(12):
+            obs, reward, terminated, truncated, info = env.step(2)
+            # obs, reward, terminated, truncated, info = env.step(2)
+            time.sleep(delay)
+
+    brick = exist_brick(x,obs)
+
+    if brick is not None:
+        if brick[0] - x < 10:
+            print("brick at:",brick)
+            for i in range(10):
+                obs, reward, terminated, truncated, info = env.step(2)
+                obs, reward, terminated, truncated, info = env.step(2)
+                time.sleep(delay)
    
 
     obs, reward, terminated, truncated, info = env.step(1)
@@ -111,7 +125,7 @@ env.close()
 
 # obs_img = cv2.cvtColor(obs, cv2.COLOR_RGB2BGR)
 # # Read the template
-# template = cv2.imread("templates/hole8.png")
+# template = cv2.imread("templates/brick1.png")
 
 # # Loop through all the matching methods
 # match_method = [cv2.TM_SQDIFF, cv2.TM_SQDIFF_NORMED, cv2.TM_CCOEFF, cv2.TM_CCOEFF_NORMED]
