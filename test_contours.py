@@ -8,7 +8,14 @@ import time
 
 import warnings
 
-from contours_detector import mario_loc, exist_enemy, exist_pipe,find_nearest_pipe
+from contours_detector import mario_loc, exist_enemy, exist_pipe,find_nearest_pipe,exist_hole
+
+CUSTOM_MOVEMENT = [
+    ['NOOP'],
+    ['right'],
+    ['right', 'A'],
+    ['A']
+]
 
 
 # Suppress all warnings (not recommended for production code)
@@ -29,6 +36,20 @@ for step in range(6000):
     x, _ = mario_loc(obs)
     y = info["y_pos"]
     # print(f"Mario ({x} | {y})")
+    width = exist_hole(x,y,obs)
+    print(width)
+
+    # if width is None:
+    #     continue
+    # else:
+    #     obs, reward, terminated, truncated, info = env.step(2)
+    #     time.sleep(delay)
+
+    if width is not None:
+        obs, reward, terminated, truncated, info = env.step(2)
+        time.sleep(delay)
+    # obs, reward, terminated, truncated, info = env.step(2)
+    # time.sleep(delay)
 
     
 

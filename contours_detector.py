@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-import sys
+import time
 
 def mario_loc(obs):
     # Convert the observation to BGR format for cv2 library
@@ -12,7 +12,7 @@ def mario_loc(obs):
     mask = cv2.inRange(obs_img, low, high)
 
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
+    print("length:",len(contours))
     # Area of 
     for contour in contours:
         if cv2.contourArea(contour) < 33 and cv2.contourArea(contour) > 0:
@@ -89,14 +89,38 @@ def find_nearest_pipe(mario_x,pipe_values):
     return closest_x,closest_y
 
 
-def exist_hole(obs):
+def exist_hole(mario_x,mario_y,obs):
     obs_img = cv2.cvtColor(obs, cv2.COLOR_RGB2BGR)
-    low = np.array([247,79,0])
-    high = np.array([247,79,0])
+    low = np.array([252,136,104])
+    high = np.array([252,136,104])
     mask = cv2.inRange(obs_img, low, high)
     
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    possible_holes = []
 
-    
+    # print("length",len(contours))
+
+    for contour in contours:
+        # print(contour[0][0][0])
+        # print(contour[0][0][1])
+
+        x_value = contour[0][0][0]
+        y_value = contour[0][0][1]
+
+        if x_value > mario_x and y_value < mario_y:
+            # time.sleep(1)
+            possible_holes.append((x_value,y_value))
+
+    # time.sleep()
+    # print("possible_holes",possible_holes)
+    if possible_holes:
+        # time.sleep(2)
+        min_x = min(possible_holes, key=lambda hole: hole[0])[0]
+        max_x = max(possible_holes, key=lambda hole: hole[0])[0]
+        width = max_x-min_x
+        return width
+    else:
+        return None
+
     
 
