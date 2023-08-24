@@ -45,33 +45,6 @@ for step in range(10000):
             obs, reward, terminated, truncated, info = env.step(2)
             time.sleep(delay)
 
-
-    # print(f"Mario ({x} | {y})")
-    # width = exist_hole(x,y,obs)
-    
-    # if width is not None:
-    #     print("width:",width)
-
-    #     if width < 50:
-    #         for i in range(10):
-    #             obs, reward, terminated, truncated, info = env.step(2)
-    #     elif width > 100:
-    #         for i in range(15):
-    #             obs, reward, terminated, truncated, info = env.step(2)
-    #     time.sleep(delay)
-
-    # if width is None:
-    #     continue
-    # else:
-    #     obs, reward, terminated, truncated, info = env.step(2)
-    #     time.sleep(delay)
-
-    
-    # obs, reward, terminated, truncated, info = env.step(2)
-    # time.sleep(delay)
-
-    
-
     x_enemy, y_enemy = exist_enemy(obs)
     if x_enemy is not None:
         # print(f"enemy ({x_enemy} | {y_enemy})")
@@ -88,21 +61,21 @@ for step in range(10000):
 
 
     if x_pipe is not None:
-        # print(f"pipe ({x_pipe} | {y_pipe})")
+        print(f"pipe ({x_pipe} | {y_pipe})")
         if y_pipe == 184: # short pipe
-            # print("short pipe")
+            print("short pipe")
             if (x_pipe - x < 45 and x_pipe - x > 40) and y <= 79:
-                # print(f"Mario ({x} | {y})")
-                # print(f"pipe ({x_pipe} | {y_pipe})")
+                print(f"Mario ({x} | {y})")
+                print(f"pipe ({x_pipe} | {y_pipe})")
                 env.step(5)
                 time.sleep(delay)
                 obs, reward, terminated, truncated, info = env.step(1)
                 time.sleep(delay)
                 continue
         elif y_pipe == 168: # medium pipe
-            # print("medium pipe")
-            # print(f"pipe ({x_pipe} | {y_pipe})")
-            # print(f"Mario ({x} | {y})")
+            print("medium pipe")
+            print(f"pipe ({x_pipe} | {y_pipe})")
+            print(f"Mario ({x} | {y})")
             if (x_pipe - x < 65 and x_pipe - x > 27) and y <= 79:
                 # print(f"Mario ({x} | {y})")
                 # print(f"pipe ({x_pipe} | {y_pipe})")
@@ -113,11 +86,11 @@ for step in range(10000):
                 time.sleep(delay)
                 continue
         else: # long pipe
-            # print("long pipe")
-            # print(f"pipe ({x_pipe} | {y_pipe})")
+            print("long pipe")
+            print(f"pipe ({x_pipe} | {y_pipe})")
             if (x_pipe - x < 75 and x_pipe - x > 27) and y <= 79:
-                # print(f"Mario ({x} | {y})")
-                # print(f"pipe ({x_pipe} | {y_pipe})")
+                print(f"Mario ({x} | {y})")
+                print(f"pipe ({x_pipe} | {y_pipe})")
                 for _ in range(20):
                     obs, reward, terminated, truncated, info = env.step(5)
                     time.sleep(delay)
