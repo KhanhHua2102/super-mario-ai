@@ -2,6 +2,8 @@ import math
 import warnings
 import copy
 import time
+from typing import Union
+import random
 
 import gym
 from gym_super_mario_bros.actions import SIMPLE_MOVEMENT, RIGHT_ONLY
@@ -33,6 +35,9 @@ class Node:
     def add_child(self, node):
         self.children.append(node)
 
+    def add_parent(self,node):
+        self.parent = node
+
     def __str__(self):
         return "no child: {}\nvisits: {}\nvalue: {}".format(
             len(self.children), self.visits, self.value)
@@ -54,19 +59,25 @@ def select(node: Node) -> Node:
     return node
 
 
-def expand(node: Node) -> Node:
+def expand(node: Node) -> Union[Node, None]:
     """
     This function is called when a node is selected for expansion.
     It randomly chooses an untried action from the current node's state 
     and creates a new node with the resulting state. 
     This new node is added as a child of the current node.
     """
+
     action = env.action_space.sample()
-    new_state = Mario_States(*env.step(action), action)
-    time.sleep(delay)
-    new_node = Node(new_state, parent=node)
-    node.add_child(new_node)
-    return new_node
+    # action = random.choice(CUSTOM_MOVEMENT)
+    print("untried action:",action)
+    if action not in node.children:
+        new_state = Mario_States(*env.step(action), action)
+        time.sleep(delay)
+        new_node = Node(new_state)
+        new_node.add_parent(node)
+        return new_node
+    return None
+    
 
 
 def simulate(node: Node, action_limit: int) -> int:
@@ -98,10 +109,12 @@ def backpropagate(node: Node, value: int) -> None:
     It increments the visit count and updates the value of each node based on the simulation result.
     This process helps to accumulate information about the quality of different actions.
     """
+    if node.parent is None:
+        return
     while node:
         node.visits += 1
         node.value += value
-        node = node.parent
+        node =  node.parent
 
     return None
 
@@ -129,7 +142,7 @@ def MCTS(root_node: Node, iterations: int, limit_per_iteration: int, limit_per_s
         print("\niteration:", iteration + 1)
         limit = limit_per_iteration
 
-        env.reset()
+        # env.reset()
 
         node = select(root)
         print("rootnode child:", len(root.children))
@@ -137,24 +150,30 @@ def MCTS(root_node: Node, iterations: int, limit_per_iteration: int, limit_per_s
         print("selecting process:")
         
         # ISSUE: NEED TO GO DOWN THE TREE UNTIL REACH THE LEAF NOD
-        if not node.state.is_terminal() and limit > 0:
+        while not node.state.is_terminal() and limit > 0:
             print("limit:", limit)
-            if len(node.children) < env.action_space.n:
+            if len(node.children) < env.action_space.n: # type: ignore
                 print("expanding")
                 print("rootnode child:", len(root.children))
-                node = expand(node)
+                new_node = expand(node)
+                if new_node is not None:
+                    node.add_child(new_node) 
                 # ISSUE: ROOT_NODE CHILDREN DOES NOT UPDATED !!!
+                # can be updated
                 print("rootnode child:", len(root.children))
             else:
                 print("selecting")
                 node = select(node)
             limit -= 1
         
+       
 
 
         print("end of selection\n")
 
         reward = simulate(node, limit_per_simulation)
+
+        print("reward:",reward)
 
         backpropagate(node, reward)
         print("rootnode child:", len(root.children))
@@ -167,9 +186,12 @@ def MCTS(root_node: Node, iterations: int, limit_per_iteration: int, limit_per_s
     while root.children:
         root = best_child(root)
         results.append((root.visits, root.value, root.state.action))
+
+
     
     # return the state of the leaf node with the highest value
     return results
+    # return best_child(root).state.action
 
 
 
@@ -182,13 +204,16 @@ env.reset()
 obs, reward, terminated, truncated, info = env.step(0)
 
 
-delay = 0.005
-iterations = 15
+delay = 0
+iterations = 100
 action_limit_per_iteration = 1500
 action_limit_per_simulation = 150
 
 root = Node(state=Mario_States(obs, reward, terminated, truncated, info, 0))
 results = MCTS(root, iterations, action_limit_per_iteration, action_limit_per_simulation)
+
+new_state, reward, done,_,_ = env.step(results)
+print("this is result action:",results)
 
 
 action_list = []
