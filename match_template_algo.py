@@ -26,6 +26,7 @@ env.reset()
 for step in range(800):
     action = env.action_space.sample()
     obs, reward, terminated, truncated, info = env.step(action)
+    print(obs.shape)
     done = terminated or truncated
     
 env.close()
@@ -59,7 +60,7 @@ for method in match_method:
     print(f"pt1: {pt1}, pt2: {pt2}\nArea: {area}\n")
 
     # Filter the results and draw the rectangle
-    if(area < 300 and area > 200):
+    if(area < 10000 and area > 200):
         cv2.rectangle(obs_img, pt1, pt2, (0, 255, 0), 1)
 
 cv2.imshow("image_window", obs_img)
