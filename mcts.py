@@ -149,7 +149,7 @@ def MCTS(root_node: Node, iterations: int, limit_per_iteration: int, limit_per_s
         
         print("selecting process:")
         
-        # ISSUE: NEED TO GO DOWN THE TREE UNTIL REACH THE LEAF NOD
+        # ISSUE: NEED TO GO DOWN THE TREE UNTIL REACH THE LEAF NODE
         while not node.state.is_terminal() and limit > 0:
             print("limit:", limit)
             if len(node.children) < env.action_space.n:
@@ -159,8 +159,6 @@ def MCTS(root_node: Node, iterations: int, limit_per_iteration: int, limit_per_s
                 new_node = expand(node)
                 if new_node is not None:
                     node.add_child(new_node) 
-                    time.sleep(2)
-                # ISSUE: ROOT_NODE CHILDREN DOES NOT UPDATED !!!
                 # can be updated
                 print("rootnode child:", len(root.children))
             else:
@@ -187,7 +185,6 @@ def MCTS(root_node: Node, iterations: int, limit_per_iteration: int, limit_per_s
         root = best_child(root)
         results.append((root.visits, root.value, root.state.action))
 
-
     
     # return the state of the leaf node with the highest value
     return results
@@ -196,7 +193,7 @@ def MCTS(root_node: Node, iterations: int, limit_per_iteration: int, limit_per_s
 
 
 
-env = gym.make('SuperMarioBros-v0', apply_api_compatibility=True, render_mode="human")
+env = gym.make('SuperMarioBros-1-1-v0', apply_api_compatibility=True, render_mode="human")
 env = JoypadSpace(env, CUSTOM_MOVEMENT)
 env = GrayScaleObservation(env, keep_dim=True)
 

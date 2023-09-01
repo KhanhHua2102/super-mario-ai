@@ -110,7 +110,7 @@ def find_nearest_pipe(mario_x, pipe_values) -> tuple:
 
     return closest_x, closest_y
     
-def exist_small_hole(obs) -> tuple[int, int]:
+def exist_small_hole(obs) -> tuple:
     obs_img = cv2.cvtColor(obs, cv2.COLOR_RGB2BGR)
     # Read the template
     template = cv2.imread("templates/hole.png")
@@ -132,23 +132,35 @@ def exist_small_hole(obs) -> tuple[int, int]:
         return matchLoc[0], matchLoc[1]
     return None, None
     
-def exist_brick(mario_x, obs):
+def exist_left_brick(mario_x, obs):
     obs_img = cv2.cvtColor(obs, cv2.COLOR_RGB2BGR)
     # Read the template
-    left_brick_tmplt = cv2.imread("templates/left_brick.png")
-    right_brick_tmplt = cv2.imread("templates/right_brick.png")
-    templates = [left_brick_tmplt, right_brick_tmplt]
+    template = cv2.imread("templates/left_brick.png")
     method = cv2.TM_CCOEFF
 
-    for template in templates:
-        result = cv2.matchTemplate(obs_img, template, method)
-        cv2.normalize( result, result, 0, 1, cv2.NORM_MINMAX, -1 )
+    result = cv2.matchTemplate(obs_img, template, method)
+    cv2.normalize( result, result, 0, 1, cv2.NORM_MINMAX, -1 )
 
-        min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
-        matchLoc = max_loc
+    min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
+    matchLoc = max_loc
 
-        if mario_x > matchLoc[0] or matchLoc == None:
-            continue
+    if matchLoc != None and matchLoc == (158, 141):
+        return matchLoc[0], matchLoc[1]
+    return None, None
+
+def exist_right_brick(mario_x, obs):
+    obs_img = cv2.cvtColor(obs, cv2.COLOR_RGB2BGR)
+    # Read the template
+    template = cv2.imread("templates/right_brick.png")
+    method = cv2.TM_CCOEFF
+
+    result = cv2.matchTemplate(obs_img, template, method)
+    cv2.normalize( result, result, 0, 1, cv2.NORM_MINMAX, -1 )
+
+    min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
+    matchLoc = max_loc
     
-    return matchLoc
+    if matchLoc != None and (matchLoc[1] == 142 or matchLoc[1] == 45 or matchLoc[1] == 46):
+        return matchLoc[0], matchLoc[1]
+    return None, None
     
