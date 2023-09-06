@@ -1,8 +1,8 @@
 import cv2
 import numpy as np
-import time
 
-def mario_loc(obs):
+
+def mario_loc(obs) -> tuple:
     # Convert the observation to BGR format for cv2 library
     obs_img = cv2.cvtColor(obs, cv2.COLOR_RGB2BGR)
 
@@ -23,7 +23,8 @@ def mario_loc(obs):
     return None, None
 
 
-def exist_enemy(obs):
+def exist_enemy(obs) -> list[tuple]:
+    enemy_locs = []
     # Convert the observation to BGR format for cv2 library
     obs_img = cv2.cvtColor(obs, cv2.COLOR_RGB2BGR)
 
@@ -40,12 +41,34 @@ def exist_enemy(obs):
             x, y, w, h = cv2.boundingRect(contour)
             center_x = x + w // 2
             center_y = y + h // 2
+
+            enemy_locs.append((center_x, center_y))
+        
+    return enemy_locs
+
+def exist_turtle(obs) -> tuple:
+    # Convert the observation to BGR format for cv2 library
+    obs_img = cv2.cvtColor(obs, cv2.COLOR_RGB2BGR)
+
+    # select enemy's head using lower and upper bounds then create a mask
+    low = np.array([67, 159, 251])
+    high = np.array([69, 161, 253])
+    mask = cv2.inRange(obs_img, low, high)
+
+    contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    # Area of turtle: 22.5
+    for contour in contours:
+        if cv2.contourArea(contour) <= 22.5 and cv2.contourArea(contour) >= 22.5:
+            x, y, w, h = cv2.boundingRect(contour)
+            center_x = x + w // 2
+            center_y = y + h // 2
+
             return center_x, center_y
-    
+        
     return None, None
 
-
-def exist_pipe(obs):
+def exist_pipe(obs) -> list[tuple]:
     # Convert the observation to BGR format for cv2 library
     obs_img = cv2.cvtColor(obs, cv2.COLOR_RGB2BGR)
 
@@ -64,10 +87,10 @@ def exist_pipe(obs):
             center_x = x + w // 2
             center_y = y + h // 2
 
-            pipe_values.append((center_x,center_y))
+            pipe_values.append((center_x, center_y))
     return pipe_values
 
-def find_nearest_pipe(mario_x,pipe_values):
+def find_nearest_pipe(mario_x, pipe_values) -> tuple:
     if len(pipe_values) == 0:
         return None,None
 
@@ -85,55 +108,59 @@ def find_nearest_pipe(mario_x,pipe_values):
             closest_x = pipe_value[0]
             closest_y = pipe_value[1]
 
-    return closest_x,closest_y
+    return closest_x, closest_y
     
-def exist_small_hole(obs):
+def exist_small_hole(obs) -> tuple:
     obs_img = cv2.cvtColor(obs, cv2.COLOR_RGB2BGR)
     # Read the template
-    template = cv2.imread("templates/hole8.png")
+    template = cv2.imread("templates/hole.png")
 
     # Loop through all the matching methods
-    match_method = [cv2.TM_SQDIFF, cv2.TM_SQDIFF_NORMED, cv2.TM_CCOEFF, cv2.TM_CCOEFF_NORMED]
-    for method in match_method:
-        result = cv2.matchTemplate(obs_img, template, method)
-        cv2.normalize( result, result, 0, 1, cv2.NORM_MINMAX, -1 )
+    # match_method = [cv2.TM_SQDIFF, cv2.TM_SQDIFF_NORMED, cv2.TM_CCOEFF, cv2.TM_CCOEFF_NORMED]
 
-        # Find the location of the best match
-        min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
-
-        if (method == cv2.TM_SQDIFF or method == cv2.TM_SQDIFF_NORMED):
-            matchLoc = min_loc
-        else:
-            matchLoc = max_loc
-
-        return matchLoc
+    result = cv2.matchTemplate(obs_img, template, cv2.TM_CCOEFF)
+    cv2.normalize( result, result, 0, 1, cv2.NORM_MINMAX, -1 )
     
-def exist_brick(mario_x,obs):
+    # Find the location of the best match
+    min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
+    matchLoc = max_loc
+
+    # pt1 = matchLoc
+    # pt2 = matchLoc[0] + template.shape[0], matchLoc[1] + template.shape[1]
+
+    if matchLoc[1] > 189:
+        return matchLoc[0], matchLoc[1]
+    return None, None
+    
+def exist_left_brick(mario_x, obs):
     obs_img = cv2.cvtColor(obs, cv2.COLOR_RGB2BGR)
     # Read the template
-    template = cv2.imread("templates/brick1.png")
+    template = cv2.imread("templates/left_brick.png")
+    method = cv2.TM_CCOEFF
 
-    # Loop through all the matching methods
-    match_method = [cv2.TM_SQDIFF, cv2.TM_SQDIFF_NORMED, cv2.TM_CCOEFF, cv2.TM_CCOEFF_NORMED]
-    for method in match_method:
-        result = cv2.matchTemplate(obs_img, template, method)
-        cv2.normalize( result, result, 0, 1, cv2.NORM_MINMAX, -1 )
+    result = cv2.matchTemplate(obs_img, template, method)
+    cv2.normalize( result, result, 0, 1, cv2.NORM_MINMAX, -1 )
 
-        # Find the location of the best match
-        min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
+    min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
+    matchLoc = max_loc
 
-        if (method == cv2.TM_SQDIFF or method == cv2.TM_SQDIFF_NORMED):
-            matchLoc = min_loc
-        else:
-            matchLoc = max_loc
+    if matchLoc != None and matchLoc == (158, 141):
+        return matchLoc[0], matchLoc[1]
+    return None, None
 
-        if mario_x > matchLoc[0]:
-            return None
+def exist_right_brick(mario_x, obs):
+    obs_img = cv2.cvtColor(obs, cv2.COLOR_RGB2BGR)
+    # Read the template
+    template = cv2.imread("templates/right_brick.png")
+    method = cv2.TM_CCOEFF
 
-        return matchLoc
+    result = cv2.matchTemplate(obs_img, template, method)
+    cv2.normalize( result, result, 0, 1, cv2.NORM_MINMAX, -1 )
+
+    min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
+    matchLoc = max_loc
     
-
-
-
+    if matchLoc != None and (matchLoc[1] == 142 or matchLoc[1] == 45 or matchLoc[1] == 46):
+        return matchLoc[0], matchLoc[1]
+    return None, None
     
-

@@ -2,6 +2,8 @@ import math
 import warnings
 import copy
 import time
+from typing import Union
+import random
 
 import gym
 from gym_super_mario_bros.actions import SIMPLE_MOVEMENT, RIGHT_ONLY
@@ -33,6 +35,9 @@ class Node:
     def add_child(self, node):
         self.children.append(node)
 
+    def add_parent(self,node):
+        self.parent = node
+
     def __str__(self):
         return "no child: {}\nvisits: {}\nvalue: {}".format(
             len(self.children), self.visits, self.value)
@@ -54,19 +59,25 @@ def select(node: Node) -> Node:
     return node
 
 
-def expand(node: Node) -> Node:
+def expand(node: Node) -> Union[Node, None]:
     """
     This function is called when a node is selected for expansion.
     It randomly chooses an untried action from the current node's state 
     and creates a new node with the resulting state. 
     This new node is added as a child of the current node.
     """
+
     action = env.action_space.sample()
-    new_state = Mario_States(*env.step(action), action)
-    time.sleep(delay)
-    new_node = Node(new_state, parent=node)
-    node.add_child(new_node)
-    return new_node
+    # action = random.choice(CUSTOM_MOVEMENT)
+    print("untried action:",action)
+    if action not in node.children:
+        new_state = Mario_States(*env.step(action), action)
+        time.sleep(delay)
+        new_node = Node(new_state)
+        new_node.add_parent(node)
+        return new_node
+    return None
+    
 
 
 def simulate(node: Node, action_limit: int,stuck_limit: int) -> int:
@@ -108,6 +119,8 @@ def backpropagate(node: Node, value: int) -> None:
     It increments the visit count and updates the value of each node based on the simulation result.
     This process helps to accumulate information about the quality of different actions.
     """
+    if node.parent is None:
+        return
     while node:
         node.visits += 1
         node.value += value
@@ -139,15 +152,15 @@ def MCTS(root_node: Node, iterations: int, limit_per_iteration: int, limit_per_s
         print("\niteration:", iteration + 1)
         limit = limit_per_iteration
 
-        env.reset()
+        # env.reset()
 
         node = select(root)
         print("rootnode child:", len(root.children))
         
         print("selecting process:")
         
-        # ISSUE: NEED TO GO DOWN THE TREE UNTIL REACH THE LEAF NOD
-        if not node.state.is_terminal() and limit > 0:
+        # ISSUE: NEED TO GO DOWN THE TREE UNTIL REACH THE LEAF NODE
+        while not node.state.is_terminal() and limit > 0:
             print("limit:", limit)
             if len(node.children) < env.action_space.n:
                 print("expanding")
@@ -159,12 +172,13 @@ def MCTS(root_node: Node, iterations: int, limit_per_iteration: int, limit_per_s
                 print("selecting")
                 node = select(node)
             limit -= 1
-        
 
 
         print("end of selection\n")
 
         reward = simulate(node, limit_per_simulation,stuck_limit)
+
+        print("reward:",reward)
 
         backpropagate(node, reward)
         print("rootnode child:", len(root.children))
@@ -178,14 +192,16 @@ def MCTS(root_node: Node, iterations: int, limit_per_iteration: int, limit_per_s
     while root_node.children:
         root_node = best_child(root_node)
         results.append((root_node.visits, root_node.value, root_node.state.action))
+
     
     # return the state of the leaf node with the highest value
     return results
+    # return best_child(root).state.action
 
 
 
 
-env = gym.make('SuperMarioBros-v0', apply_api_compatibility=True, render_mode="human")
+env = gym.make('SuperMarioBros-1-1-v0', apply_api_compatibility=True, render_mode="human")
 env = JoypadSpace(env, CUSTOM_MOVEMENT)
 env = GrayScaleObservation(env, keep_dim=True)
 
@@ -201,6 +217,9 @@ stuck_limit = 200
 
 root = Node(state=Mario_States(obs, reward, terminated, truncated, info, 0))
 results = MCTS(root, iterations, action_limit_per_iteration, action_limit_per_simulation,stuck_limit)
+
+new_state, reward, done,_,_ = env.step(results)
+print("this is result action:",results)
 
 
 action_list = []

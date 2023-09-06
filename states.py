@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-import contours_detector as cd
+import detectors as cd
 
 
 # 1: small pipe
