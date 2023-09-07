@@ -4,7 +4,8 @@ CUSTOM_MOVEMENT = [
     ['NOOP'],
     ['right'],
     ['right', 'A'],
-    ['A']
+    ['A'],
+    ['right', 'B'],
 ]
 
 def low_jump(env, times, delay):
