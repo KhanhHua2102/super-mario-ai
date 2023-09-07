@@ -7,7 +7,7 @@ readme = "README.md"
 packages = [{include = "super_mario_ai"}]
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "^3.8"
 gym-super-mario-bros = "^7.4.0"
 stable-baselines3 = "^2.0.0"
 shimmy = "^1.2.1"
