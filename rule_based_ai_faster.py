@@ -2,7 +2,7 @@ import time
 import warnings
 
 import gym
-from gym_super_mario_bros.actions import SIMPLE_MOVEMENT
+import gym_super_mario_bros
 from nes_py.wrappers import JoypadSpace
 
 import mario_actions as ac
@@ -27,12 +27,21 @@ env = gym.make(
 )
 env = JoypadSpace(env, CUSTOM_MOVEMENT)
 
-delay = 0
-done = False
-env.reset()
-obs, reward, terminated, truncated, info = env.step(0)
-x_mario = mario_loc_detect(obs)[0]
-x_mario_list = []
+
+# def stand_still(x_mario_list, env, delay, steps):
+#     stand_still = False
+#     if len(x_mario_list) >= steps:
+#         tmp = x_mario_list[-1]
+#         for i in range(steps):
+#             if x_mario_list[i] != tmp:
+#                 stand_still = False
+#                 x_mario_list = []
+#                 break
+#             stand_still = True
+#     if stand_still:
+#         print("\nmario stand still\n")
+#         ac.high_jump(env, 3, delay)
+#         time.sleep(delay)
 
 
 # Take action if enemy is in front of mario
@@ -51,7 +60,7 @@ def enemy_react(obs, x_mario, y_mario, env, delay):
 
     if (
         x_enemy is not None
-        and (x_enemy - x_mario < 32 and x_enemy - x_mario > 28)
+        and (x_enemy - x_mario < 42 and x_enemy - x_mario > 28)
         and y_mario == 79
         and y_enemy == 198
     ):
@@ -67,7 +76,7 @@ def turtle_react(obs, x_mario, y_mario, env, delay):
     turle_x, turle_y = exist_turtle(obs)
     if (
         turle_x is not None
-        and (turle_x - x_mario < 33 and turle_x - x_mario > 28)
+        and (turle_x - x_mario < 58 and turle_x - x_mario > 28)
         and y_mario == 79
         and turle_y == 195
     ):
@@ -85,7 +94,7 @@ def pipe_react(obs, x_mario, y_mario, env, delay):
 
     if x_pipe is not None:
         if y_pipe == 184:  # short pipe
-            if (x_pipe - x_mario < 45 and x_pipe - x_mario > 40) and y_mario == 79:
+            if (x_pipe - x_mario < 50 and x_pipe - x_mario > 40) and y_mario == 79:
                 print("short pipe jump")
                 env.step(3)
                 time.sleep(delay)
@@ -95,7 +104,7 @@ def pipe_react(obs, x_mario, y_mario, env, delay):
         elif y_pipe == 168:  # medium pipe
             if (x_pipe - x_mario < 65 and x_pipe - x_mario > 27) and y_mario == 79:
                 print("medium pipe jump")
-                for _ in range(12):
+                for _ in range(9):
                     env.step(2)
                     time.sleep(delay)
                 obs, reward, terminated, truncated, info = env.step(1)
@@ -123,7 +132,7 @@ def hole_react(obs, x_mario, y_mario, env, delay):
         and y_mario == 79
     ):
         print("hole jump")
-        for _ in range(18):
+        for _ in range(7):
             obs, reward, terminated, truncated, info = env.step(2)
             time.sleep(delay)
         return True, obs, reward, terminated, truncated, info
@@ -134,18 +143,10 @@ def hole_react(obs, x_mario, y_mario, env, delay):
 def left_brick_react(obs, x_mario, env, delay):
     left_brick = exist_left_brick(x_mario, obs)
     if left_brick != (None, None):
-        if left_brick[0] - x_mario <= 39 and left_brick[0] - x_mario > -30:
-            for _ in range(20):
-                env.step(2)
-                time.sleep(delay)
-            for _ in range(19):
-                env.step(0)
-            for _ in range(18):
-                env.step(2)
-                time.sleep(delay)
-            for _ in range(15):
-                obs, reward, terminated, truncated, info = env.step(0)
-        return True, obs, reward, terminated, truncated, info
+        if left_brick[0] - x_mario <= 50 and left_brick[0] - x_mario > -30:
+            obs, reward, terminated, truncated, info = ac.high_jump(env, 2, delay)
+            time.sleep(delay)
+            return True, obs, reward, terminated, truncated, info
     return False, None, None, None, None, None
 
 
@@ -171,6 +172,13 @@ def mario_location(obs, x_mario):
     return x_mario_info, x_mario, y_mario
 
 
+delay = 0.00
+done = False
+env.reset()
+obs, reward, terminated, truncated, info = env.step(0)
+x_mario = mario_loc_detect(obs)[0]
+x_mario_list = []
+
 # record start time
 start = time.time()
 print("\nStart running...")
@@ -181,7 +189,7 @@ while not done:
 
         # If mario stand still for _ steps, jump continuously
         x_mario_list.insert(0, x_mario_info)
-        steps = 7
+        steps = 8
         stand_still = False
         if len(x_mario_list) >= steps:
             tmp = x_mario_list[-1]
@@ -232,7 +240,7 @@ while not done:
             obs, reward, terminated, truncated, info = results[1:]
             continue
 
-        obs, reward, terminated, truncated, info = env.step(1)
+        obs, reward, terminated, truncated, info = env.step(4)
         time.sleep(delay)
 
         done = terminated or truncated
