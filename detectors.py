@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 
 
-def mario_loc(obs) -> tuple:
+def mario_loc_detect(obs) -> tuple:
     # Convert the observation to BGR format for cv2 library
     obs_img = cv2.cvtColor(obs, cv2.COLOR_RGB2BGR)
 

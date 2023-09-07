@@ -8,7 +8,7 @@ from nes_py.wrappers import JoypadSpace
 import mario_actions as ac
 from detectors import (exist_enemy, exist_left_brick, exist_pipe,
                        exist_right_brick, exist_small_hole, exist_turtle,
-                       find_nearest_pipe, mario_loc)
+                       find_nearest_pipe, mario_loc_detect)
 from mario_actions import CUSTOM_MOVEMENT
 
 # Suppress all warnings (not recommended for production code)
@@ -24,7 +24,7 @@ delay = 0
 done = False
 env.reset()
 obs, reward, terminated, truncated, info = env.step(0)
-x_mario = mario_loc(obs)[0]
+x_mario = mario_loc_detect(obs)[0]
 
 x_mario_list = []
 
@@ -39,7 +39,7 @@ while (not done):
 # for step in range(850): # go to big hole
     try:
         # Mario's position
-        x_tmp, y_tmp = mario_loc(obs)
+        x_tmp, y_tmp = mario_loc_detect(obs)
         if x_tmp is not None:
             x_mario = x_tmp
         x_mario_info = info["x_pos"]
@@ -143,7 +143,7 @@ while (not done):
                 for _ in range(15):
                     obs, reward, terminated, truncated, info = env.step(0)
         
-        x_tmp, y_tmp = mario_loc(obs)
+        x_tmp, y_tmp = mario_loc_detect(obs)
         if x_tmp is not None:
             x_mario = x_tmp
         y_mario = info["y_pos"]

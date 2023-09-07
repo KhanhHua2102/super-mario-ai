@@ -1,16 +1,13 @@
-from nes_py.wrappers import JoypadSpace
-import gym_super_mario_bros
-from gym_super_mario_bros.actions import SIMPLE_MOVEMENT
-import gym
-
 import time
-
 import warnings
 
-from mario_states import CUSTOM_MOVEMENT
+import gym
+import gym_super_mario_bros
+from gym_super_mario_bros.actions import SIMPLE_MOVEMENT
+from nes_py.wrappers import JoypadSpace
+
 import mario_actions as ac
-
-
+from mario_states import CUSTOM_MOVEMENT
 
 # Suppress all warnings (not recommended for production code)
 warnings.filterwarnings("ignore")
@@ -31,19 +28,13 @@ delay = 0.1
 
 done = True
 env.reset()
-# for action in action_list:
-    # print("action:", action)
-    # obs, reward, terminated, truncated, info = env.step(action)
-    # print(reward)
+for action in action_list:
+    print("action:", action)
+    obs, reward, terminated, truncated, info = env.step(action)
+    print(reward)
     
-    # # for i in range(12):
-    # #     env.step(0)
-    # time.sleep(delay)
-    # done = terminated or truncated
-
-
-# for _ in range(15):
-#     env.step(1)
-#     time.sleep(delay)
-ac.high_jump(env, 5, delay)
+    # for i in range(12):
+    #     env.step(0)
+    time.sleep(delay)
+    done = terminated or truncated
 
