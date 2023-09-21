@@ -22,7 +22,7 @@ env = JoypadSpace(env, SIMPLE_MOVEMENT)
 # Random agent simulation
 done = True
 env.reset()
-for step in range(1100):
+for step in range(10):
     action = env.action_space.sample()
     obs, reward, terminated, truncated, info = env.step(action)
     done = terminated or truncated
@@ -36,8 +36,8 @@ cv2.imshow("obs_img", obs_img)
 cv2.waitKey(0)
 
 # select small hole and create a mask
-low = np.array([252,136,104])
-high = np.array([252,136,104])
+low = np.array([0, 54, 248])
+high = np.array([0, 56, 248])
 mask = cv2.inRange(obs_img, low, high)
 
 cv2.imshow("mask", mask)

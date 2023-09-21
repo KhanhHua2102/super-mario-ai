@@ -8,6 +8,7 @@ from stable_baselines3.common.vec_env import VecFrameStack, DummyVecEnv
 
 import cv2
 import numpy as np
+from matplotlib import pyplot as pl
 
 JoypadSpace.reset = lambda self, **kwargs: self.env.reset(**kwargs)
 
@@ -18,7 +19,12 @@ env = JoypadSpace(env, SIMPLE_MOVEMENT)
 
 done = True
 env.reset()
-for step in range(3000):
+for step in range(100):
     action = env.action_space.sample()
     obs, reward, terminated, truncated, info = env.step(action)
     done = terminated or truncated
+
+
+print(obs.shape)
+pl.imshow(obs)
+pl.show()

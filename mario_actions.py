@@ -8,6 +8,21 @@ CUSTOM_MOVEMENT = [
     ["right", "B"],
 ]
 
+CUSTOM_MOVEMENT_2 = [
+    ["NOOP"],
+    ["right"],
+    ["right", "B"],
+    ["right", "A"],
+    ["A"],
+]
+
+CUSTOM_MOVEMENT_3 = [
+    ["NOOP"],
+    ["right"],
+    ["right", "A"],
+    ["A"],
+]
+
 
 def low_jump(env, times, delay):
     obs, reward, terminated, truncated, info = None, None, None, None, None

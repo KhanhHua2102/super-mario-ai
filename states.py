@@ -34,7 +34,7 @@ def one_enemy_detect(obs, info) -> bool:
 
     if (
         x_enemy is not None
-        and (x_enemy - x_mario < 32 and x_enemy - x_mario > 28)
+        and (x_enemy - x_mario < 32 and x_enemy - x_mario > 15)
         and y_mario == 79
         and y_enemy == 198
     ):
