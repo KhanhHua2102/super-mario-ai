@@ -5,12 +5,15 @@ import warnings
 
 import gym
 import gym_super_mario_bros
-from matplotlib import pyplot as plt
 import numpy as np
+from matplotlib import pyplot as plt
 from nes_py.wrappers import JoypadSpace
 
-from detectors import mario_loc_detect, exist_enemy, exist_turtle, exist_left_brick, exist_right_brick, exist_pipe, exist_small_hole
-
+from Image_Detection.detectors import (exist_enemy, exist_left_brick,
+                                       exist_pipe, exist_right_brick,
+                                       exist_small_hole, exist_turtle,
+                                       mario_loc_detect)
+from utils import print_stats
 
 CUSTOM_MOVEMENT = [
     ["NOOP"],
@@ -21,16 +24,15 @@ CUSTOM_MOVEMENT = [
 
 # Suppress all warnings (not recommended for production code)
 warnings.filterwarnings("ignore")
-
 JoypadSpace.reset = lambda self, **kwargs: self.env.reset(**kwargs)
 # Create the base environment
 env = gym.make(
-    "SuperMarioBros-1-1-v0", apply_api_compatibility=True, render_mode="rgb_array"
+    "SuperMarioBros-1-1-v3", apply_api_compatibility=True, render_mode="rgb_array"
 )
 env = JoypadSpace(env, CUSTOM_MOVEMENT)
 
-
 # ----------------------------------------------------------
+
 DELAY = 0.0
 ACTION_SIZE = 4
 
@@ -42,9 +44,10 @@ DISCOUNT_RATE = 0.95  # Discounting rate
 # Exploration parameters
 EPSILON = 1.0  # Exploration rate
 DECAY_RATE = 0.005  # Exponential decay rate for exploration prob
+
 # ----------------------------------------------------------
 
-def getState(input_obs) -> str:
+def get_state(input_obs) -> str:
     mario_loc = mario_loc_detect(input_obs)
     enemy_loc = exist_enemy(input_obs)
     turtle_loc = exist_turtle(input_obs)
@@ -57,7 +60,7 @@ def getState(input_obs) -> str:
 
     return str(result_state)
 
-def getMaxAction(input_state, input_q_table) -> int:
+def get_max_action(input_state, input_q_table) -> int:
     max_action = -1
     if (len(input_q_table) == 0):
         print("Q table is empty")
@@ -71,7 +74,7 @@ def getMaxAction(input_state, input_q_table) -> int:
 
     return max_action
 
-def getMaxValue(input_state, input_q_table) -> float:
+def get_max_value(input_state, input_q_table) -> float:
     max_value = 0
     if (len(input_q_table) == 0):
         print("Q table is empty")
@@ -87,17 +90,18 @@ def getMaxValue(input_state, input_q_table) -> float:
 
 # ----------------------------------------------------------
 
+# Start timer
+start = time.time()
 # List of rewards
 rewards = []
 # Q-table dictionary initialization
 q_table = {}
 
 for episode in range(TOTAL_EPISODES):
-    print("\nEpisode: " + str(episode + 1))
     env.reset()
     obs, reward, terminated, truncated, info = env.step(0)
     
-    state = getState(obs)
+    state = get_state(obs)
 
     step = 0
     done = False
@@ -106,8 +110,8 @@ for episode in range(TOTAL_EPISODES):
     for step in range(MAX_STEPS):
         explore_exploit_tradeoff = random.uniform(0, 1)
 
-        if explore_exploit_tradeoff > EPSILON and getMaxAction(state, q_table) in range(0, 4):
-            action = getMaxAction(state, q_table)
+        if explore_exploit_tradeoff > EPSILON and get_max_action(state, q_table) in range(0, 4):
+            action = get_max_action(state, q_table)
         else:
             action = random.randint(0, 3)
 
@@ -115,7 +119,7 @@ for episode in range(TOTAL_EPISODES):
         
         time.sleep(DELAY)
 
-        new_state = getState(obs)
+        new_state = get_state(obs)
 
         old_value = q_table.get(tuple((state, action))) or 0
 
@@ -124,7 +128,7 @@ for episode in range(TOTAL_EPISODES):
         if (pair not in q_table.keys() or len(q_table) == 0):
             q_table[pair] = 0
         else:
-            q_table[pair] += LEARNING_RATE * (reward + DISCOUNT_RATE * getMaxValue(new_state, q_table) - old_value) # type: ignore
+            q_table[pair] += LEARNING_RATE * (reward + DISCOUNT_RATE * get_max_value(new_state, q_table) - old_value) # type: ignore
 
         total_rewards += reward
         state = new_state
@@ -135,14 +139,15 @@ for episode in range(TOTAL_EPISODES):
     EPSILON = np.exp(-DECAY_RATE * episode)
 
     rewards.append(total_rewards)
-    print("Score: " + str(total_rewards))
+    print_stats(episode, total_rewards, EPSILON, LEARNING_RATE, DISCOUNT_RATE, time.time() - start)
 
 print("Score over time: " + str(sum(rewards) / TOTAL_EPISODES))
+print("Training time: " + str(time.time() - start) + " seconds")
 
 # ----------------------------------------------------------
 
 # Save q_table to json file
-with open("q_table.json", "w", encoding="utf-8") as json_file:
+with open("Q_Learning/q_learning_model/q_table_state.json", "w", encoding="utf-8") as json_file:
     json.dump(q_table, json_file)
 
 
@@ -150,14 +155,14 @@ action_list = []
 
 env.reset()
 obs, reward, terminated, truncated, info = env.step(0)
-state = getState(obs)
+state = get_state(obs)
 
 for move in range(100):
-    action = getMaxAction(state, q_table)
+    action = get_max_action(state, q_table)
     if (action == -1):
         action = random.randint(0, 3)
     obs, reward, terminated, truncated, info = env.step(action)
-    state = getState(obs)
+    state = get_state(obs)
     action_list.append(action)
 
 env.close()
@@ -166,7 +171,7 @@ print(action_list)
 
 
 # Save action_list to txt file
-with open("action_list.txt", "w", encoding="utf-8") as f:
+with open("Q_Learning/q_learning_model/action_list_state.txt", "w", encoding="utf-8") as f:
     for action in action_list:
         f.write(str(action) + "\n")
 

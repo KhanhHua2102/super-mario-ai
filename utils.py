@@ -31,3 +31,13 @@ def hashState(obs, action) -> int:
     hash_int = int(hash_obj.hexdigest(), 16)
 
     return hash_int
+
+def print_stats(curr_episode, curr_total_rewards, epsilon, learning_rate, discount_rate, curr_time):
+    print("-------------------------")
+    print("Episode: " + str(curr_episode + 1))
+    print("Score: " + str(curr_total_rewards))
+    print("Time: " + str(curr_time))
+    print("Epsilon: " + str(epsilon))
+    print("Learning rate: " + str(learning_rate))
+    print("Discount rate: " + str(discount_rate))
+    print("-------------------------")

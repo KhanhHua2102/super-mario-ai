@@ -1,19 +1,16 @@
-from nes_py.wrappers import JoypadSpace
-import gym_super_mario_bros
-from gym_super_mario_bros.actions import SIMPLE_MOVEMENT
-import gym
-
-from stable_baselines3.common.vec_env import VecFrameStack, DummyVecEnv
+import warnings
 
 import cv2
-import numpy as np
+import gym
+import gym_super_mario_bros
 import matplotlib.pyplot as plt
-
-import warnings
+import numpy as np
+from gym_super_mario_bros.actions import SIMPLE_MOVEMENT
+from nes_py.wrappers import JoypadSpace
+from stable_baselines3.common.vec_env import DummyVecEnv, VecFrameStack
 
 # Suppress all warnings (not recommended for production code)
 warnings.filterwarnings("ignore")
-
 JoypadSpace.reset = lambda self, **kwargs: self.env.reset(**kwargs)
 
 # Initialize the environment and the agent

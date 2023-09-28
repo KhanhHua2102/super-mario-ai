@@ -23,7 +23,7 @@ DELAY = 0
 FRAME_SKIP = 4
 
 # read action list from file
-with open("action_list.txt", 'r', encoding="utf-8") as f:
+with open("q_learning_model/action_list.txt", 'r', encoding="utf-8") as f:
     action_list = [int(line.strip()) for line in f.readlines()]
 
 

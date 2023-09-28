@@ -15,7 +15,7 @@ warnings.filterwarnings("ignore")
 JoypadSpace.reset = lambda self, **kwargs: self.env.reset(**kwargs)
 
 # 1. Create the base environment
-env = gym.make("SuperMarioBros-v0", apply_api_compatibility=True, render_mode="human")
+env = gym.make("SuperMarioBros-1-1-v3", apply_api_compatibility=True, render_mode="rgb_array")
 # 2. Simplify the controls
 env = JoypadSpace(env, SIMPLE_MOVEMENT)
 # 3. Grayscale
@@ -31,7 +31,7 @@ env.reset()
 
 EPISODES = 1000000
 CHECK_FREQ = 10000
-LEARNING_RATE = 0.000001
+LEARNING_RATE = 0.0001
 N_STEPS = 512
 
 # ----------------------------------------------------------
@@ -55,8 +55,8 @@ class TrainAndLoggingCallback(BaseCallback):
 
 # ----------------------------------------------------------
 
-CHECKPOINT_DIR = "./train/"
-LOG_DIR = "./logs/"
+CHECKPOINT_DIR = "./PPO/train/"
+LOG_DIR = "./PPO/logs/"
 
 # Setup model saving callback
 callback = TrainAndLoggingCallback(check_freq=CHECK_FREQ, save_path=CHECKPOINT_DIR)
