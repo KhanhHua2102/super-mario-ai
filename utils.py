@@ -31,15 +31,3 @@ def hashState(obs, action) -> int:
     hash_int = int(hash_obj.hexdigest(), 16)
 
     return hash_int
-
-
-
-# my_3d_array = [[[1, 2, 3], [4, 5, 6]], [[7, 8, 9], [10, 11, 12]]]
-# hash_value = hash3DArray(my_3d_array)
-# print(hash_value)
-
-# my_dict = {}
-
-# my_dict[(hash_value, 2)] = 512341
-
-# print(my_dict[(hash_value, 2)])
