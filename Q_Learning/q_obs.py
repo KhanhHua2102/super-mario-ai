@@ -1,4 +1,5 @@
 import json
+import os
 import random
 import time
 import warnings
@@ -10,8 +11,7 @@ from gym.wrappers.gray_scale_observation import GrayScaleObservation
 from matplotlib import pyplot as plt
 from nes_py.wrappers import JoypadSpace
 
-from utils import print_stats
-
+from utils import print_stats, save_q_table
 
 CUSTOM_MOVEMENT = [
     ["NOOP"],
@@ -32,46 +32,56 @@ env = JoypadSpace(env, CUSTOM_MOVEMENT)
 
 # ----------------------------------------------------------
 
+# Environment parameters
 DELAY = 0.0
 ACTION_SIZE = 4
 
-TOTAL_EPISODES = 500  # Total episodes
-LEARNING_RATE = 0.8  # Learning rate
-MAX_STEPS = 1000  # Max steps per episode
+# Training parameters
+TOTAL_EPISODES = 3000
+MAX_STEPS = 1000
 FRAME_SKIP = 4
-DISCOUNT_RATE = 0.95  # Discounting rate
+GAMMA = 0.95
+
+# Learning parameters
+learning_rate = 0.8
+MIN_LEARNING_RATE = 0.05
+DISCOUNT_RATE = 0.00001
 
 # Exploration parameters
-EPSILON = 1.0  # Exploration rate
-DECAY_RATE = 0.005  # Exponential decay rate for exploration prob
+exploration_rate = 1.0
+MIN_EXPLORE_RATE = 0.01
+DECAY_RATE = 0.0001
 
 # ----------------------------------------------------------
 
+
 def get_max_action(input_obs, input_q_table) -> int:
     max_action = -1
-    if (len(input_q_table) == 0):
+    if len(input_q_table) == 0:
         return -1
     for act in range(ACTION_SIZE):
-        curr_pair = tuple((str(input_obs), act))
-        if (curr_pair not in input_q_table.keys()):
+        curr_pair = str((str(input_obs), act))
+        if curr_pair not in input_q_table.keys():
             continue
-        if (input_q_table.get(curr_pair) > max_action):
+        if input_q_table.get(curr_pair) > max_action:
             max_action = act
 
     return max_action
 
+
 def get_max_value(input_obs, input_q_table) -> float:
     max_value = 0
-    if (len(input_q_table) == 0):
+    if len(input_q_table) == 0:
         return -1
     for act in range(ACTION_SIZE):
-        curr_pair = tuple((str(input_obs), act))
-        if (curr_pair not in input_q_table.keys()):
+        curr_pair = str((str(input_obs), act))
+        if curr_pair not in input_q_table.keys():
             continue
-        if (input_q_table.get(curr_pair) > max_value):
+        if input_q_table.get(curr_pair) > max_value:
             max_value = input_q_table.get(curr_pair)
 
     return max_value
+
 
 # ----------------------------------------------------------
 
@@ -82,7 +92,18 @@ rewards = []
 # Q-table initialization
 q_table = {}
 
-for episode in range(TOTAL_EPISODES):
+if os.path.exists("Q_Learning/train/current_model_obs.json") and os.path.exists(
+    "Q_Learning/train/model_statistics_obs.json"
+):
+    with open("Q_Learning/train/model_statistics_obs.json", "r") as f:
+        conf = json.load(f)
+        if conf["iterations"] > 0:
+            start_episode = conf["iterations"]
+    # This is the AI model started
+    with open("Q_Learning/train/current_model_obs.json", "r") as f:
+        q_table = json.load(f)
+
+for episode in range(start_episode, TOTAL_EPISODES):
     env.reset()
     obs, reward, terminated, truncated, info = env.step(0)
     # Crop the image to bottom half
@@ -95,80 +116,59 @@ for episode in range(TOTAL_EPISODES):
     for step in range(MAX_STEPS // FRAME_SKIP):
         explore_exploit_tradeoff = random.uniform(0, 1)
 
-        if explore_exploit_tradeoff > EPSILON and get_max_action(obs, q_table) in range(0, 4):
+        if explore_exploit_tradeoff > exploration_rate and get_max_action(
+            obs, q_table
+        ) in range(0, 4):
             action = get_max_action(obs, q_table)
         else:
             action = random.randint(0, 3)
 
         for _ in range(FRAME_SKIP - 1):
             new_obs, reward, terminated, truncated, info = env.step(action)
-            if (terminated or truncated):
+            if terminated or truncated:
                 break
-        if (terminated or truncated):
-                break
-        obs, reward, terminated, truncated, info = env.step(action) 
-        if (terminated or truncated):
+        if terminated or truncated:
             break
+        obs, reward, terminated, truncated, info = env.step(action)
+
         # Crop the image to bottom half
         new_state = obs[obs.shape[0] // 2 : obs.shape[0] - 15, :]
         time.sleep(DELAY)
 
-        old_value = q_table.get(tuple((str(state), action))) or 0
+        old_value = q_table.get(str((str(state), action))) or 0
 
-        pair = tuple((str(new_state), action))
-        if (len(q_table) == 0 or pair not in q_table.keys()):
+        pair = str((str(new_state), action))
+        if len(q_table) == 0 or pair not in q_table.keys():
             q_table[pair] = 0
         else:
             # Update Q(s,a)= Q(s,a) + lr [R(s,a) + gamma * max Q(s',a') - Q(s,a)]
             # qtable[state,action] = qtable[state,action] + learning_rate * (reward + discount_rate * np.max(qtable[new_state,:])-qtable[state,action])
-            q_table[pair] +=  LEARNING_RATE * (reward + DISCOUNT_RATE * get_max_value(new_state, q_table) - old_value)
+            q_table[pair] += learning_rate * (
+                reward + GAMMA * get_max_value(new_state, q_table) - old_value
+            )
 
         total_rewards += reward
         state = new_state
 
-    EPSILON = np.exp(-DECAY_RATE * episode)
+        if terminated or truncated:
+            break
 
-    rewards.append(total_rewards)
-    print_stats(episode, total_rewards, EPSILON, LEARNING_RATE, DISCOUNT_RATE, time.time() - start)
+    # Reduce exploration rate (epsilon) and learning rate (alpha) over time
+    exploration_rate = max(MIN_EXPLORE_RATE, np.exp(-DECAY_RATE * episode))
+    learning_rate = max(MIN_LEARNING_RATE, np.exp(-DISCOUNT_RATE * episode))
+
+    print_stats(
+        episode, total_rewards, time.time() - start, exploration_rate, learning_rate
+    )
 
 print("Score over time: " + str(sum(rewards) / TOTAL_EPISODES))
 print("Training time: " + str(time.time() - start) + " seconds")
 
-# ----------------------------------------------------------
-
-# Save q_table to json file
-with open("Q_Learning/q_learning_model/q_table_obs.json", "w", encoding="utf-8") as json_file:
-    json.dump(q_table, json_file)
-
-
-action_list = []
-
-env.reset()
-obs, reward, terminated, truncated, info = env.step(0)
-# Crop the image to bottom half
-obs = obs[obs.shape[0] // 2 : obs.shape[0] - 15, :]
-
-for move in range(100):
-    action = get_max_action(obs, q_table)
-    if (action == -1):
-        action = random.randint(0, 3)
-    for _ in range(FRAME_SKIP - 1):
-        env.step(action)
-    obs, reward, terminated, truncated, info = env.step(action)
-    # Crop the image to bottom half
-    obs = obs[obs.shape[0] // 2 : obs.shape[0] - 15, :]
-    action_list.append(action)
-
-env.close()
-
-print(action_list)
-
-
-# Save action_list to txt file
-with open("Q_Learning/q_learning_model/action_list_obs.txt", "w", encoding="utf-8") as f:
-    for action in action_list:
-        f.write(str(action) + "\n")
-
 # Plot the rewards over episodes
 plt.plot(rewards)
 plt.show()
+
+# ----------------------------------------------------------
+
+# Save q_table to json file
+save_q_table(q_table, episode, "_obs")

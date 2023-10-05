@@ -1,3 +1,5 @@
+# Import the game
+import json
 import os
 import warnings
 
@@ -12,6 +14,8 @@ from stable_baselines3.common.vec_env import DummyVecEnv, VecFrameStack
 
 warnings.filterwarnings("ignore")
 JoypadSpace.reset = lambda self, **kwargs: self.env.reset(**kwargs)
+
+# ----------------------------------------------------------
 
 # 1. Create the base environment
 env = gym.make(
@@ -30,8 +34,14 @@ env.reset()
 
 # ----------------------------------------------------------
 
-TOTAL_TIMESTEPS = 1000000
+CHECKPOINT_DIR = "./PPO/train/"
+LOG_DIR = "./PPO/logs/"
+
 CHECK_FREQ = 10000
+TOTAL_TIMESTEPS = 100000
+
+TIME_STEPS = 10000
+
 LEARNING_RATE = 0.0001
 N_STEPS = 512  # Steps before update network model
 
@@ -58,27 +68,42 @@ class TrainAndLoggingCallback(BaseCallback):
         return True
 
 
-# ----------------------------------------------------------
-
-CHECKPOINT_DIR = "./PPO/train/"
-LOG_DIR = "./PPO/logs/"
-
 # Setup model saving callback
 callback = TrainAndLoggingCallback(check_freq=CHECK_FREQ, save_path=CHECKPOINT_DIR)
 
-# This is the AI model started
-model = PPO(
-    "CnnPolicy",
-    env,
-    verbose=1,
-    tensorboard_log=LOG_DIR,
-    learning_rate=LEARNING_RATE,
-    n_steps=N_STEPS,
-)
+current_iteration = 0
+conf = None
+if os.path.exists("PPO/train/model_statistics"):
+    with open("PPO/train/model_statistics", "r") as f:
+        conf = json.load(f)
+        current_iteration = conf["iterations"]
+
+        print(f"\nLoaded model from iteration {current_iteration}\n")
+else:
+    print("\nNo model found, starting from scratch\n")
 
 # ----------------------------------------------------------
+
+model_load_file = "PPO/train/current_best_model"
+if os.path.exists(model_load_file):
+    # This is the AI model started
+    model = PPO.load(model_load_file, env=env)
+else:
+    model = PPO(
+        "CnnPolicy",
+        env,
+        verbose=1,
+        tensorboard_log=LOG_DIR,
+        learning_rate=LEARNING_RATE,
+        n_steps=N_STEPS,
+    )
 
 # Train the AI model, this is where the AI model starts to learn
 model.learn(total_timesteps=TOTAL_TIMESTEPS, callback=callback)
 
-model.save("thisisatestmodel")
+model.save(f"PPO/train/current_best_model")
+model.save(f"PPO/train/best_model_{current_iteration+TIME_STEPS}")
+
+with open("PPO/train/model_statistics", "w") as f:
+    conf["iterations"] += TIME_STEPS
+    json.dump(conf, f)

@@ -1,6 +1,8 @@
 import hashlib
-import numpy as np
+import json
+
 import cv2
+import numpy as np
 
 
 def stack_frames(frames, new_frame, stack_size):
@@ -32,12 +34,26 @@ def hashState(obs, action) -> int:
 
     return hash_int
 
-def print_stats(curr_episode, curr_total_rewards, epsilon, learning_rate, discount_rate, curr_time):
+
+def print_stats(
+    curr_episode, curr_total_rewards, curr_time, explore_rate, learning_rate
+):
     print("-------------------------")
     print("Episode: " + str(curr_episode + 1))
     print("Score: " + str(curr_total_rewards))
     print("Time: " + str(curr_time))
-    print("Epsilon: " + str(epsilon))
-    print("Learning rate: " + str(learning_rate))
-    print("Discount rate: " + str(discount_rate))
+    print("Explore Rate: " + str(explore_rate))
+    print("Learning Rate: " + str(learning_rate))
     print("-------------------------")
+
+
+def save_q_table(q_table, episode, file_name):
+    # Save q_table to json file
+    with open(
+        f"Q_Learning/train/current_model{file_name}.json", "w+", encoding="utf-8"
+    ) as json_file:
+        json.dump(q_table, json_file)
+    with open(
+        f"Q_Learning/train/model_statistics{file_name}.json", "w+", encoding="utf-8"
+    ) as file:
+        json.dump({"iterations": episode + 1}, file)

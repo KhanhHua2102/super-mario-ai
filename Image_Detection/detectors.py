@@ -121,7 +121,7 @@ def find_nearest_pipe(mario_x, pipe_values) -> tuple:
 def exist_small_hole(obs) -> tuple:
     obs_img = cv2.cvtColor(obs, cv2.COLOR_RGB2BGR)
     # Read the template
-    template = cv2.imread("templates/hole.png")
+    template = cv2.imread("./Image_Detection/templates/hole.png")
 
     # Loop through all the matching methods
     # match_method = [cv2.TM_SQDIFF, cv2.TM_SQDIFF_NORMED, cv2.TM_CCOEFF, cv2.TM_CCOEFF_NORMED]
@@ -144,7 +144,7 @@ def exist_small_hole(obs) -> tuple:
 def exist_left_brick(mario_x, obs):
     obs_img = cv2.cvtColor(obs, cv2.COLOR_RGB2BGR)
     # Read the template
-    template = cv2.imread("templates/left_brick.png")
+    template = cv2.imread("./Image_Detection/templates/left_brick.png")
     method = cv2.TM_CCOEFF
 
     result = cv2.matchTemplate(obs_img, template, method)
@@ -161,7 +161,7 @@ def exist_left_brick(mario_x, obs):
 def exist_right_brick(mario_x, obs):
     obs_img = cv2.cvtColor(obs, cv2.COLOR_RGB2BGR)
     # Read the template
-    template = cv2.imread("templates/right_brick.png")
+    template = cv2.imread("./Image_Detection/templates/right_brick.png")
     method = cv2.TM_CCOEFF
 
     result = cv2.matchTemplate(obs_img, template, method)
