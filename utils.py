@@ -47,13 +47,18 @@ def print_stats(
     print("-------------------------")
 
 
-def save_q_table(q_table, episode, file_name):
+def save_q_table(q_table, episode, learning_rate, exploration_rate, file_name):
     # Save q_table to json file
     with open(
-        f"Q_Learning/train/current_model{file_name}.json", "w+", encoding="utf-8"
+        f"Q_Learning/train/current_model_{file_name}.json", "w+", encoding="utf-8"
     ) as json_file:
-        json.dump(q_table, json_file)
+        json.dump(str(q_table), json_file)
     with open(
-        f"Q_Learning/train/model_statistics{file_name}.json", "w+", encoding="utf-8"
+        f"Q_Learning/train/model_statistics_{file_name}.json", "w+", encoding="utf-8"
     ) as file:
-        json.dump({"iterations": episode + 1}, file)
+        data = {
+            "iterations": episode,
+            "learning_rate": learning_rate,
+            "exploration_rate": exploration_rate,
+        }
+        json.dump(data, file)

@@ -12,6 +12,7 @@ from matplotlib import pyplot as plt
 from nes_py.wrappers import JoypadSpace
 
 from utils import print_stats, save_q_table
+import cProfile, pstats
 
 CUSTOM_MOVEMENT = [
     ["NOOP"],
@@ -20,37 +21,18 @@ CUSTOM_MOVEMENT = [
     ["A"],
 ]
 
+# Environment parameters
+ACTION_SIZE = CUSTOM_MOVEMENT.__len__()
+
 # Suppress all warnings (not recommended for production code)
 warnings.filterwarnings("ignore")
 JoypadSpace.reset = lambda self, **kwargs: self.env.reset(**kwargs)
 # Create the base environment
 env = gym.make(
-    "SuperMarioBros-1-1-v3", apply_api_compatibility=True, render_mode="rgb_array"
+    "SuperMarioBros-1-1-v3", apply_api_compatibility=True, render_mode="human"
 )
 env = GrayScaleObservation(env, keep_dim=False)
 env = JoypadSpace(env, CUSTOM_MOVEMENT)
-
-# ----------------------------------------------------------
-
-# Environment parameters
-DELAY = 0.0
-ACTION_SIZE = 4
-
-# Training parameters
-TOTAL_EPISODES = 3000
-MAX_STEPS = 1000
-FRAME_SKIP = 4
-GAMMA = 0.95
-
-# Learning parameters
-learning_rate = 0.8
-MIN_LEARNING_RATE = 0.05
-DISCOUNT_RATE = 0.00001
-
-# Exploration parameters
-exploration_rate = 1.0
-MIN_EXPLORE_RATE = 0.01
-DECAY_RATE = 0.0001
 
 # ----------------------------------------------------------
 
@@ -60,7 +42,7 @@ def get_max_action(input_obs, input_q_table) -> int:
     if len(input_q_table) == 0:
         return -1
     for act in range(ACTION_SIZE):
-        curr_pair = str((str(input_obs), act))
+        curr_pair = str(input_obs), str(act)
         if curr_pair not in input_q_table.keys():
             continue
         if input_q_table.get(curr_pair) > max_action:
@@ -74,7 +56,7 @@ def get_max_value(input_obs, input_q_table) -> float:
     if len(input_q_table) == 0:
         return -1
     for act in range(ACTION_SIZE):
-        curr_pair = str((str(input_obs), act))
+        curr_pair = str(input_obs), str(act)
         if curr_pair not in input_q_table.keys():
             continue
         if input_q_table.get(curr_pair) > max_value:
@@ -92,83 +74,119 @@ rewards = []
 # Q-table initialization
 q_table = {}
 
-if os.path.exists("Q_Learning/train/current_model_obs.json") and os.path.exists(
-    "Q_Learning/train/model_statistics_obs.json"
-):
-    with open("Q_Learning/train/model_statistics_obs.json", "r") as f:
-        conf = json.load(f)
-        if conf["iterations"] > 0:
-            start_episode = conf["iterations"]
-    # This is the AI model started
-    with open("Q_Learning/train/current_model_obs.json", "r") as f:
-        q_table = json.load(f)
+start_episode = 0
 
-for episode in range(start_episode, TOTAL_EPISODES):
-    env.reset()
-    obs, reward, terminated, truncated, info = env.step(0)
-    # Crop the image to bottom half
-    state = str(obs[obs.shape[0] // 2 : obs.shape[0] - 15, :])
+# if os.path.exists("Q_Learning/train/current_model_obs.json") and os.path.exists(
+#     "Q_Learning/train/model_statistics_obs.json"
+# ):
+#     with open("Q_Learning/train/model_statistics_obs.json", "r") as f:
+#         conf = json.load(f)
+#         if conf["iterations"] > 0:
+#             start_episode = conf["iterations"]
+#             if conf["learning_rate"] > 0:
+#                 learning_rate = conf["learning_rate"]
+#             if conf["exploration_rate"] > 0:
+#                 exploration_rate = conf["exploration_rate"]
+#     # This is the AI model started
+#     with open("Q_Learning/train/current_model_obs.json", "r") as f:
+#         q_table = json.load(f)
 
-    step = 0
-    done = False
-    total_rewards = 0
 
-    for step in range(MAX_STEPS // FRAME_SKIP):
-        explore_exploit_tradeoff = random.uniform(0, 1)
+def main():
+    # Training parameters
+    TOTAL_EPISODES = 2
+    MAX_STEPS = 2000
+    FRAME_SKIP = 5
+    GAMMA = 0.95  # Discount factor
 
-        if explore_exploit_tradeoff > exploration_rate and get_max_action(
-            obs, q_table
-        ) in range(0, 4):
-            action = get_max_action(obs, q_table)
-        else:
-            action = random.randint(0, 3)
+    # Learning parameters
+    learning_rate = 0.8
+    MIN_LEARNING_RATE = 0.05
+    DISCOUNT_RATE = 0.001
 
-        for _ in range(FRAME_SKIP - 1):
-            new_obs, reward, terminated, truncated, info = env.step(action)
+    # Exploration parameters
+    exploration_rate = 1.0
+    MIN_EXPLORE_RATE = 0.01
+    DECAY_RATE = 0.001
+
+    for episode in range(start_episode, TOTAL_EPISODES):
+        env.reset()
+        obs, reward, terminated, truncated, info = env.step(0)
+        # Crop the image to bottom half
+        state = str(obs[obs.shape[0] // 2 : obs.shape[0] - 15, :])
+
+        step = 0
+        done = False
+        total_rewards = 0
+
+        for step in range(MAX_STEPS // FRAME_SKIP):
+            explore_exploit_tradeoff = random.uniform(0, 1)
+
+            if explore_exploit_tradeoff > exploration_rate and get_max_action(
+                obs, q_table
+            ) in range(0, 4):
+                action = get_max_action(obs, q_table)
+            else:
+                action = random.randint(0, 3)
+
+            for _ in range(FRAME_SKIP):
+                new_obs, reward, terminated, truncated, info = env.step(action)
+                if terminated or truncated:
+                    break
             if terminated or truncated:
                 break
-        if terminated or truncated:
-            break
-        obs, reward, terminated, truncated, info = env.step(action)
 
-        # Crop the image to bottom half
-        new_state = obs[obs.shape[0] // 2 : obs.shape[0] - 15, :]
-        time.sleep(DELAY)
+            # Crop the image to bottom half
+            new_state = str(new_obs[new_obs.shape[0] // 2 : new_obs.shape[0] - 15, :])
 
-        old_value = q_table.get(str((str(state), action))) or 0
+            pair = str(state), str(action)
+            old_value = q_table.get(pair) or 0
 
-        pair = str((str(new_state), action))
-        if len(q_table) == 0 or pair not in q_table.keys():
-            q_table[pair] = 0
-        else:
-            # Update Q(s,a)= Q(s,a) + lr [R(s,a) + gamma * max Q(s',a') - Q(s,a)]
-            # qtable[state,action] = qtable[state,action] + learning_rate * (reward + discount_rate * np.max(qtable[new_state,:])-qtable[state,action])
-            q_table[pair] += learning_rate * (
-                reward + GAMMA * get_max_value(new_state, q_table) - old_value
-            )
+            if len(q_table) == 0 or pair not in q_table.keys():
+                q_table[pair] = 0
+            else:
+                # Update Q(s,a)= Q(s,a) + lr [R(s,a) + gamma * max Q(s',a') - Q(s,a)]
+                # qtable[state,action] = qtable[state,action] + learning_rate * (reward + discount_rate * np.max(qtable[new_state,:])-qtable[state,action])
+                q_table[pair] += learning_rate * (
+                    reward + GAMMA * get_max_value(new_state, q_table) - old_value
+                )
 
-        total_rewards += reward
-        state = new_state
+            total_rewards += reward
+            state = new_state
 
-        if terminated or truncated:
-            break
+            if terminated or truncated:
+                break
 
-    # Reduce exploration rate (epsilon) and learning rate (alpha) over time
-    exploration_rate = max(MIN_EXPLORE_RATE, np.exp(-DECAY_RATE * episode))
-    learning_rate = max(MIN_LEARNING_RATE, np.exp(-DISCOUNT_RATE * episode))
+        # Reduce exploration rate (epsilon) and learning rate (alpha) over time
+        exploration_rate = max(MIN_EXPLORE_RATE, np.exp(-DECAY_RATE * episode))
+        learning_rate = max(MIN_LEARNING_RATE, np.exp(-DISCOUNT_RATE * episode))
 
-    print_stats(
-        episode, total_rewards, time.time() - start, exploration_rate, learning_rate
-    )
+        rewards.append(total_rewards)
+        print_stats(
+            episode, total_rewards, time.time() - start, exploration_rate, learning_rate
+        )
 
-print("Score over time: " + str(sum(rewards) / TOTAL_EPISODES))
-print("Training time: " + str(time.time() - start) + " seconds")
+    print("End Training!")
 
-# Plot the rewards over episodes
-plt.plot(rewards)
-plt.show()
+    # Save q_table to json file
+    save_q_table(q_table, TOTAL_EPISODES, learning_rate, exploration_rate, "obs")
+    print("Score over time: " + str(sum(rewards) / TOTAL_EPISODES))
+    print("Training time: " + str(time.time() - start) + " seconds")
 
-# ----------------------------------------------------------
+    # Plot the rewards over episodes
+    plt.plot(rewards)
+    plt.show()
 
-# Save q_table to json file
-save_q_table(q_table, episode, "_obs")
+
+if __name__ == "__main__":
+    profiler = cProfile.Profile()
+    profiler.enable()
+    main()
+    profiler.disable()
+    stats = pstats.Stats(profiler).sort_stats("cumtime")
+    stats.strip_dirs()
+    stats.print_stats()
+
+    # Export profiler output to file
+    stats = pstats.Stats(profiler)
+    stats.dump_stats("Q_Learning/debug/cProfiler")

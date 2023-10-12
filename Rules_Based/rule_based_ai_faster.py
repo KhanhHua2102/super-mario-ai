@@ -210,7 +210,7 @@ def mario_location(obs, x_mario):
 
 # record start time
 start = time.time()
-print("\nStart running...")
+print("\nStart running...\n")
 while not done:
     try:
         # Mario's position

@@ -33,7 +33,7 @@ warnings.filterwarnings("ignore")
 # Environment setup
 JoypadSpace.reset = lambda self, **kwargs: self.env.reset(**kwargs)
 env = gym.make(
-    "SuperMarioBros-1-1-v0", apply_api_compatibility=True, render_mode="human"
+    "SuperMarioBros-2-1-v0", apply_api_compatibility=True, render_mode="human"
 )
 env = JoypadSpace(env, CUSTOM_MOVEMENT)
 
@@ -225,7 +225,7 @@ def mario_location(obs, x_mario):
 
 # record start time
 start = time.time()
-print("\nStart running...")
+print("\nStart running...\n")
 while not done:
     try:
         # Mario's position

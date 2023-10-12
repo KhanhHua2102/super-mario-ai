@@ -21,6 +21,9 @@ from Image_Detection.detectors import (
 )
 from utils import print_stats, save_q_table
 
+import cProfile, pstats
+
+
 CUSTOM_MOVEMENT = [
     ["NOOP"],
     ["right"],
@@ -28,28 +31,17 @@ CUSTOM_MOVEMENT = [
     ["A"],
 ]
 
+# Environment parameters
+ACTION_SIZE = CUSTOM_MOVEMENT.__len__()
+
 # Suppress all warnings (not recommended for production code)
 warnings.filterwarnings("ignore")
 JoypadSpace.reset = lambda self, **kwargs: self.env.reset(**kwargs)
 # Create the base environment
 env = gym.make(
-    "SuperMarioBros-1-1-v3", apply_api_compatibility=True, render_mode="rgb_array"
+    "SuperMarioBros-1-1-v3", apply_api_compatibility=True, render_mode="human"
 )
 env = JoypadSpace(env, CUSTOM_MOVEMENT)
-
-# ----------------------------------------------------------
-
-DELAY = 0.0
-ACTION_SIZE = 4
-
-TOTAL_EPISODES = 500  # Total episodes
-learning_rate = 0.8  # Learning rate
-MAX_STEPS = 1000  # Max steps per episode
-DISCOUNT_RATE = 0.95  # Discounting rate
-
-# Exploration parameters
-EPSILON = 1.0  # Exploration rate
-DECAY_RATE = 0.005  # Exponential decay rate for exploration prob
 
 # ----------------------------------------------------------
 
@@ -82,7 +74,7 @@ def get_max_action(input_state, input_q_table) -> int:
         print("Q table is empty")
         return 0
     for act in range(ACTION_SIZE):
-        curr_pair = tuple((input_state, act))
+        curr_pair = str(input_state), str(act)
         if curr_pair not in input_q_table.keys():
             continue
         if input_q_table.get(curr_pair) > max_action:
@@ -97,7 +89,7 @@ def get_max_value(input_state, input_q_table) -> float:
         print("Q table is empty")
         return 0
     for act in range(ACTION_SIZE):
-        curr_pair = tuple((input_state, act))
+        curr_pair = str(input_state), str(act)
         if curr_pair not in input_q_table.keys():
             continue
         if input_q_table.get(curr_pair) > max_value:
@@ -108,80 +100,122 @@ def get_max_value(input_state, input_q_table) -> float:
 
 # ----------------------------------------------------------
 
-# Start timer
-start = time.time()
-# List of rewards
-rewards = []
-# Q-table dictionary initialization
-q_table = {}
 
-if os.path.exists("Q_Learning/train/current_model_state.json") and os.path.exists(
-    "Q_Learning/train/model_statistics_state.json"
-):
-    with open("Q_Learning/train/model_statistics_state.json", "r") as f:
-        conf = json.load(f)
-        if conf["iterations"] > 0:
-            start_episode = conf["iterations"]
-    # This is the AI model started
-    with open("Q_Learning/train/current_model_state.json", "r") as f:
-        q_table = json.load(f)
+def main():
+    # Training parameters
+    TOTAL_EPISODES = 2
+    MAX_STEPS = 2000
+    FRAME_SKIP = 5
+    GAMMA = 0.95  # Discount factor
 
-for episode in range(TOTAL_EPISODES):
-    env.reset()
-    obs, reward, terminated, truncated, info = env.step(0)
+    # Learning parameters
+    learning_rate = 0.8
+    MIN_LEARNING_RATE = 0.05
+    DISCOUNT_RATE = 0.001
 
-    state = get_state(obs)
+    # Exploration parameters
+    exploration_rate = 1.0
+    MIN_EXPLORE_RATE = 0.01
+    DECAY_RATE = 0.001
 
-    step = 0
-    done = False
-    total_rewards = 0
+    # Start timer
+    start = time.time()
+    # List of rewards
+    rewards = []
+    # Q-table dictionary initialization
+    q_table = {}
 
-    for step in range(MAX_STEPS):
-        explore_exploit_tradeoff = random.uniform(0, 1)
+    start_episode = 0
 
-        if explore_exploit_tradeoff > EPSILON and get_max_action(
-            state, q_table
-        ) in range(0, 4):
-            action = get_max_action(state, q_table)
-        else:
-            action = random.randint(0, 3)
+    # if os.path.exists("Q_Learning/train/current_model_state.json") and os.path.exists(
+    #     "Q_Learning/train/model_statistics_state.json"
+    # ):
+    #     with open("Q_Learning/train/model_statistics_state.json", "r") as f:
+    #         conf = json.load(f)
+    #         if conf["iterations"] > 0:
+    #             start_episode = conf["iterations"]
+    #             if conf["learning_rate"] > 0:
+    #                 learning_rate = conf["learning_rate"]
+    #             if conf["exploration_rate"] > 0:
+    #                 exploration_rate = conf["exploration_rate"]
+    #     # This is the AI model started
+    #     with open("Q_Learning/train/current_model_state.json", "r") as f:
+    #         q_table = json.load(f)
 
-        obs, reward, terminated, truncated, info = env.step(action)
+    for episode in range(start_episode, TOTAL_EPISODES):
+        env.reset()
+        obs, reward, terminated, truncated, info = env.step(0)
 
-        time.sleep(DELAY)
+        state = get_state(obs)
 
-        new_state = get_state(obs)
+        step = 0
+        done = False
+        total_rewards = 0
 
-        old_value = q_table.get(tuple((state, action))) or 0
+        for step in range(MAX_STEPS // FRAME_SKIP):
+            explore_exploit_tradeoff = random.uniform(0, 1)
 
-        # Update Q(s,a)= Q(s,a) + lr [R(s,a) + gamma * max Q(s',a') - Q(s,a)]
-        pair = tuple((new_state, action))
-        if pair not in q_table.keys() or len(q_table) == 0:
-            q_table[pair] = 0
-        else:
-            q_table[pair] += learning_rate * (reward + DISCOUNT_RATE * get_max_value(new_state, q_table) - old_value)  # type: ignore
+            if explore_exploit_tradeoff > exploration_rate and get_max_action(
+                state, q_table
+            ) in range(0, 4):
+                action = get_max_action(state, q_table)
+            else:
+                action = random.randint(0, 3)
 
-        total_rewards += reward
-        state = new_state
+            for _ in range(FRAME_SKIP):
+                new_obs, reward, terminated, truncated, _ = env.step(action)
+                if terminated or truncated:
+                    break
+            if terminated or truncated:
+                break
 
-        if terminated or truncated:
-            break
+            new_state = get_state(new_obs)
 
-    exploration_rate = np.exp(-DECAY_RATE * episode)
+            pair = str(state), str(action)
+            old_value = q_table.get(pair) or 0
 
-    rewards.append(total_rewards)
-    print_stats(
-        episode, total_rewards, time.time() - start, exploration_rate, learning_rate
-    )
+            # Update Q(s,a)= Q(s,a) + lr [R(s,a) + gamma * max Q(s',a') - Q(s,a)]
+            if pair not in q_table.keys() or len(q_table) == 0:
+                q_table[pair] = 0
+            else:
+                q_table[pair] += learning_rate * (reward + GAMMA * get_max_value(new_state, q_table) - old_value)  # type: ignore
 
-print("Score over time: " + str(sum(rewards) / TOTAL_EPISODES))
-print("Training time: " + str(time.time() - start) + " seconds")
+            total_rewards += reward
+            state = new_state
 
-# ----------------------------------------------------------
+            if terminated or truncated:
+                break
 
-# Save q_table to json file
-save_q_table(q_table, episode, "_state")
+        # Reduce exploration rate (epsilon) and learning rate (alpha) over time
+        exploration_rate = max(MIN_EXPLORE_RATE, np.exp(-DECAY_RATE * episode))
+        learning_rate = max(MIN_LEARNING_RATE, np.exp(-DISCOUNT_RATE * episode))
 
-# Plot the rewards over episodes
-plt.plot(rewards)
-plt.show()
+        rewards.append(total_rewards)
+        print_stats(
+            episode, total_rewards, time.time() - start, exploration_rate, learning_rate
+        )
+
+    print("End Training!")
+
+    # Save q_table to json file
+    save_q_table(q_table, TOTAL_EPISODES, learning_rate, exploration_rate, "state")
+    print("Score over time: " + str(sum(rewards) / TOTAL_EPISODES))
+    print("Training time: " + str(time.time() - start) + " seconds")
+
+    # Plot the rewards over episodes
+    plt.plot(rewards)
+    plt.show()
+
+
+if __name__ == "__main__":
+    profiler = cProfile.Profile()
+    profiler.enable()
+    main()
+    profiler.disable()
+    stats = pstats.Stats(profiler).sort_stats("cumtime")
+    stats.strip_dirs()
+    stats.print_stats()
+
+    # Export profiler output to file
+    stats = pstats.Stats(profiler)
+    stats.dump_stats("Q_Learning/debug/cProfiler")
