@@ -196,108 +196,109 @@ def mario_location(obs, x_mario):
     return x_mario_info, x_mario, y_mario
 
 
-# record start time
-start = time.time()
-print("\nStart running...\n")
-while not done:
-    try:
-        # Mario's position
-        x_mario_info, x_mario, y_mario = mario_location(obs, x_mario)
+def main():
+    while not done:
+        try:
+            # Mario's position
+            x_mario_info, x_mario, y_mario = mario_location(obs, x_mario)
 
-        # If mario stand still for _ steps, jump continuously
-        x_mario_list.insert(0, x_mario_info)
-        steps = 8
-        stand_still = False
-        if len(x_mario_list) >= steps:
-            tmp = x_mario_list[-1]
-            for i in range(steps):
-                if x_mario_list[i] != tmp:
-                    stand_still = False
-                    x_mario_list = []
-                    break
-                stand_still = True
-        if stand_still:
-            print("\nmario stand still\n")
-            ac.high_jump(env, 3, delay)
+            # If mario stand still for _ steps, jump continuously
+            x_mario_list.insert(0, x_mario_info)
+            steps = 8
+            stand_still = False
+            if len(x_mario_list) >= steps:
+                tmp = x_mario_list[-1]
+                for i in range(steps):
+                    if x_mario_list[i] != tmp:
+                        stand_still = False
+                        x_mario_list = []
+                        break
+                    stand_still = True
+            if stand_still:
+                print("\nmario stand still\n")
+                ac.high_jump(env, 3, delay)
+                time.sleep(delay)
+
+            # Enemy
+            results = enemy_react(obs, x_mario, y_mario, env, delay)
+            if results[0] is True:
+                obs, reward, terminated, truncated, info = results[1:]
+                continue
+
+            # Turtle
+            results = turtle_react(obs, x_mario, y_mario, env, delay)
+            if results[0] is True:
+                obs, reward, terminated, truncated, info = results[1:]
+                continue
+
+            # Pipe
+            results = pipe_react(obs, x_mario, y_mario, env, delay)
+            if results[0] is True:
+                obs, reward, terminated, truncated, info = results[1:]
+                continue
+
+            # Small hole
+            results = hole_react(obs, x_mario, y_mario, env, delay)
+            if results[0] is True:
+                obs, reward, terminated, truncated, info = results[1:]
+                continue
+
+            # Left Brick
+            results = left_brick_react(obs, x_mario, env, delay)
+            if results[0] is True:
+                obs, reward, terminated, truncated, info = results[1:]
+                continue
+
+            # Right Brick
+            results = right_brick_react(obs, x_mario, env, delay)
+            if results[0] is True:
+                obs, reward, terminated, truncated, info = results[1:]
+                continue
+
+            obs, reward, terminated, truncated, info = env.step(4)
+            stats.update(reward, x_mario, y_mario)
             time.sleep(delay)
 
-        # Enemy
-        results = enemy_react(obs, x_mario, y_mario, env, delay)
-        if results[0] is True:
-            obs, reward, terminated, truncated, info = results[1:]
-            continue
+            done = terminated or truncated
 
-        # Turtle
-        results = turtle_react(obs, x_mario, y_mario, env, delay)
-        if results[0] is True:
-            obs, reward, terminated, truncated, info = results[1:]
-            continue
+        except ValueError:
+            print("\nThe End")
+            break
 
-        # Pipe
-        results = pipe_react(obs, x_mario, y_mario, env, delay)
-        if results[0] is True:
-            obs, reward, terminated, truncated, info = results[1:]
-            continue
+    env.close()
 
-        # Small hole
-        results = hole_react(obs, x_mario, y_mario, env, delay)
-        if results[0] is True:
-            obs, reward, terminated, truncated, info = results[1:]
-            continue
-
-        # Left Brick
-        results = left_brick_react(obs, x_mario, env, delay)
-        if results[0] is True:
-            obs, reward, terminated, truncated, info = results[1:]
-            continue
-
-        # Right Brick
-        results = right_brick_react(obs, x_mario, env, delay)
-        if results[0] is True:
-            obs, reward, terminated, truncated, info = results[1:]
-            continue
-
-        obs, reward, terminated, truncated, info = env.step(4)
-        stats.update(reward, x_mario, y_mario)
-        time.sleep(delay)
-
-        done = terminated or truncated
-
-    except ValueError:
-        print("\nThe End")
-        break
-
-env.close()
 
 # ------------------------------------------------------------
 
-# Agent Stats
-end = time.time()
-print("Time of execution:", round((end - start) * 10**3, 1), "ms")
-print("Time left in game: ", info["time"], "ms")
-print("Score: ", info["score"])
-print("Number of actions: ", stats.get_nums_action())
-print("FPS: ", round(stats.get_nums_action() / (end - start), 1))
-print("Furthest distance: ", info["x_pos"])
-print("Total reward: ", stats.get_total_reward()[-1])
-print()
+if __name__ == "__main__":
+    # record start time
+    start = time.time()
+    print("\nStart running...\n")
 
-# ------------------------------------------------------------
+    timeit_time = timeit.timeit(main, number=1)
 
-# Plotting
+    # Agent Stats
+    end = time.time()
+    print("Time of execution:", round((end - start) * 10**3, 1), "ms")
+    print("Time left in game: ", info["time"], "ms")
+    print("Score: ", info["score"])
+    print("Number of actions: ", stats.get_nums_action())
+    print("FPS: ", round(stats.get_nums_action() / (end - start), 1))
+    print("Furthest distance: ", info["x_pos"])
+    print("Total reward: ", stats.get_total_reward()[-1])
+    print()
 
-# Plot total reward over number of action time as line chart
-plt.plot(stats.get_total_reward())
-plt.title("Total Reward over Number of Action")
-plt.xlabel("Number of Action")
-plt.ylabel("Total Reward")
-plt.show()
+    # Plot total reward over number of action time as line chart
+    plt.plot(stats.get_total_reward())
+    plt.title("Total Reward over Number of Action")
+    plt.xlabel("Number of Action")
+    plt.ylabel("Total Reward")
+    plt.show()
 
-
-# Plot heatmap of agent's activity
-level_map = stats.get_heatmap()
-plt.imshow(level_map, cmap="hot", interpolation="nearest")
-plt.colorbar()
-plt.gca().invert_yaxis()
-plt.title("Agent's Activity Heatmap")
-plt.show()
+    # Plot heatmap of agent's activity
+    level_map = stats.get_heatmap()
+    plt.imshow(level_map, cmap="hot", interpolation="nearest")
+    plt.colorbar()
+    plt.gca().invert_yaxis()
+    plt.title("Agent's Activity Heatmap")
+    plt.show()

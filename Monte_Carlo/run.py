@@ -15,33 +15,29 @@ CUSTOM_MOVEMENT = [
 # Suppress all warnings (not recommended for production code)
 warnings.filterwarnings("ignore")
 JoypadSpace.reset = lambda self, **kwargs: self.env.reset(**kwargs)
-env = gym.make('SuperMarioBros-v0', apply_api_compatibility=True, render_mode="human")
+env = gym.make(
+    "SuperMarioBros-1-1-v0", apply_api_compatibility=True, render_mode="human"
+)
 env = JoypadSpace(env, CUSTOM_MOVEMENT)
 
 
-DELAY = 0
-FRAME_SKIP = 4
+DELAY = 0.01
+FRAME_SKIP = 0
 
 # read action list from file
-with open("q_learning_model/action_list.txt", 'r', encoding="utf-8") as f:
+with open("Monte_Carlo/action_list.txt", "r", encoding="utf-8") as f:
     action_list = [int(line.strip()) for line in f.readlines()]
 
 
 env.reset()
 for action in action_list:
     print("action:", action)
-    
-    for i in range(FRAME_SKIP - 1):
-        obs, reward, terminated, truncated, info = env.step(action)
-        if terminated or truncated:
-            break
-    obs, reward, terminated, truncated, info = env.step(action)
-    
-    # for i in range(12):
-    #     env.step(0)
-    time.sleep(DELAY)
 
+    obs, reward, terminated, truncated, info = env.step(action)
     if terminated or truncated:
         break
+
+    time.sleep(DELAY)
+
 
 env.close()

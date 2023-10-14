@@ -5,34 +5,27 @@ import cv2
 import numpy as np
 
 
-def stack_frames(frames, new_frame, stack_size):
-    if frames is None:
-        frames = np.zeros((stack_size, *new_frame.shape), dtype=np.uint8)
+class Stat(object):
+    def __init__(self):
+        self.nums_action = 0
+        self.total_reward = [0]
+        self.heatmap = np.zeros((256, 240))
 
-    frames[:-1] = frames[1:]
-    frames[-1] = new_frame
+    def update(self, total_reward, mario_x, mario_y):
+        self.nums_action += 1
+        self.total_reward.append(
+            self.total_reward[len(self.total_reward) - 1] + total_reward
+        )
+        self.heatmap[mario_y, mario_x] += 1
 
-    return frames
+    def get_nums_action(self):
+        return self.nums_action
 
+    def get_total_reward(self):
+        return self.total_reward
 
-def convert_to_grayscale(image):
-    grayscale_image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
-    return grayscale_image
-
-
-def hashState(obs, action) -> int:
-    # Convert the 3D array to a string representation
-    obs_str = str(obs)
-    action_str = str(action)
-    arr_str = obs_str + action_str
-
-    # Use a hash function to generate a unique hash for the array
-    hash_obj = hashlib.md5(arr_str.encode())
-
-    # Convert the hash to an integer (you can choose a different method if needed)
-    hash_int = int(hash_obj.hexdigest(), 16)
-
-    return hash_int
+    def get_heatmap(self):
+        return self.heatmap
 
 
 def print_stats(

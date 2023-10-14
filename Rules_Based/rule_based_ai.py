@@ -5,6 +5,9 @@ import gym
 import gym_super_mario_bros
 from nes_py.wrappers import JoypadSpace
 
+from matplotlib import pyplot as plt
+import numpy as np
+
 import mario_actions as ac
 from Image_Detection.detectors import (
     exist_enemy,
@@ -16,6 +19,8 @@ from Image_Detection.detectors import (
     find_nearest_pipe,
     mario_loc_detect,
 )
+
+from utils import Stat, print_stats
 
 # ------------------------------------------------------------
 
@@ -33,7 +38,7 @@ warnings.filterwarnings("ignore")
 # Environment setup
 JoypadSpace.reset = lambda self, **kwargs: self.env.reset(**kwargs)
 env = gym.make(
-    "SuperMarioBros-2-1-v0", apply_api_compatibility=True, render_mode="human"
+    "SuperMarioBros-1-1-v0", apply_api_compatibility=True, render_mode="human"
 )
 env = JoypadSpace(env, CUSTOM_MOVEMENT)
 
@@ -45,28 +50,10 @@ x_mario = mario_loc_detect(obs)[0]
 x_mario_list = []
 
 
-class Stat(object):
-    def __init__(self, nums_action, total_reward):
-        self.nums_action = nums_action
-        self.total_reward = total_reward
-
-    def update(self, nums_action, total_reward):
-        self.nums_action += nums_action
-        self.total_reward.append(
-            self.total_reward[len(self.total_reward) - 1] + total_reward
-        )
-
-    def get_nums_action(self):
-        return self.nums_action
-
-    def get_total_reward(self):
-        return self.total_reward
-
-
 # ------------------------------------------------------------
 
 # Initialize stats
-stats = Stat(0, [0])
+stats = Stat()
 
 
 # Take action if enemy is in front of mario
@@ -91,7 +78,7 @@ def enemy_react(obs, x_mario, y_mario, env, delay):
     ):
         print("enemy jump")
         obs, reward, terminated, truncated, info = env.step(2)
-        stats.update(1, reward)
+        stats.update(reward, x_mario, y_mario)
         time.sleep(delay)
         return True, obs, reward, terminated, truncated, info
     return False, None, None, None, None, None
@@ -108,7 +95,7 @@ def turtle_react(obs, x_mario, y_mario, env, delay):
     ):
         print("turtle jump")
         obs, reward, terminated, truncated, info = env.step(2)
-        stats.update(1, reward)
+        stats.update(reward, x_mario, y_mario)
         time.sleep(delay)
         return True, obs, reward, terminated, truncated, info
     return False, None, None, None, None, None
@@ -125,10 +112,10 @@ def pipe_react(obs, x_mario, y_mario, env, delay):
             if (x_pipe - x_mario < 45 and x_pipe - x_mario > 40) and y_mario == 79:
                 print("short pipe jump")
                 _, reward, _, _, _ = env.step(3)
-                stats.update(1, reward)
+                stats.update(reward, x_mario, y_mario)
                 time.sleep(delay)
                 obs, reward, terminated, truncated, info = env.step(1)
-                stats.update(1, reward)
+                stats.update(reward, x_mario, y_mario)
                 time.sleep(delay)
                 return True, obs, reward, terminated, truncated, info
         elif y_pipe == 168:  # medium pipe
@@ -136,10 +123,10 @@ def pipe_react(obs, x_mario, y_mario, env, delay):
                 print("medium pipe jump")
                 for _ in range(12):
                     _, reward, _, _, _ = env.step(2)
-                    stats.update(1, reward)
+                    stats.update(reward, x_mario, y_mario)
                     time.sleep(delay)
                 obs, reward, terminated, truncated, info = env.step(1)
-                stats.update(1, reward)
+                stats.update(reward, x_mario, y_mario)
                 time.sleep(delay)
                 return True, obs, reward, terminated, truncated, info
         else:  # long pipe
@@ -147,10 +134,10 @@ def pipe_react(obs, x_mario, y_mario, env, delay):
                 print("long pipe jump")
                 for _ in range(20):
                     _, reward, _, _, _ = env.step(2)
-                    stats.update(1, reward)
+                    stats.update(reward, x_mario, y_mario)
                     time.sleep(delay)
                 obs, reward, terminated, truncated, info = env.step(1)
-                stats.update(1, reward)
+                stats.update(reward, x_mario, y_mario)
                 time.sleep(delay)
                 return True, obs, reward, terminated, truncated, info
     return False, None, None, None, None, None
@@ -169,7 +156,7 @@ def hole_react(obs, x_mario, y_mario, env, delay):
         print("hole jump")
         for _ in range(18):
             obs, reward, terminated, truncated, info = env.step(2)
-            stats.update(1, reward)
+            stats.update(reward, x_mario, y_mario)
             time.sleep(delay)
         return True, obs, reward, terminated, truncated, info
     return False, None, None, None, None, None
@@ -183,18 +170,18 @@ def left_brick_react(obs, x_mario, env, delay):
         if left_brick[0] - x_mario <= 39 and left_brick[0] - x_mario > -30:
             for _ in range(20):
                 _, reward, _, _, _ = env.step(2)
-                stats.update(1, reward)
+                stats.update(reward, x_mario, y_mario)
                 time.sleep(delay)
             for _ in range(19):
                 _, reward, _, _, _ = env.step(0)
-                stats.update(1, reward)
+                stats.update(reward, x_mario, y_mario)
             for _ in range(18):
                 _, reward, _, _, _ = env.step(2)
-                stats.update(1, reward)
+                stats.update(reward, x_mario, y_mario)
                 time.sleep(delay)
             for _ in range(15):
                 obs, reward, terminated, truncated, info = env.step(0)
-                stats.update(1, reward)
+                stats.update(reward, x_mario, y_mario)
         return True, obs, reward, terminated, truncated, info
     return False, None, None, None, None, None
 
@@ -207,7 +194,7 @@ def right_brick_react(obs, x_mario, env, delay):
         if right_brick[0] - x_mario <= 65 and right_brick[0] - x_mario > -40:
             for i in range(16):
                 obs, reward, terminated, truncated, info = env.step(2)
-                stats.update(1, reward)
+                stats.update(reward, x_mario, y_mario)
                 time.sleep(delay)
                 return True, obs, reward, terminated, truncated, info
     return False, None, None, None, None, None
@@ -285,7 +272,7 @@ while not done:
             continue
 
         obs, reward, terminated, truncated, info = env.step(1)
-        stats.update(1, reward)
+        stats.update(reward, x_mario, y_mario)
         time.sleep(delay)
 
         done = terminated or truncated
@@ -296,6 +283,7 @@ while not done:
 
 env.close()
 
+time.sleep(10)
 # ------------------------------------------------------------
 
 # Agent Stats
@@ -312,11 +300,18 @@ print()
 # ------------------------------------------------------------
 
 # Plotting
-import matplotlib.pyplot as plt
 
 # Plot total reward over number of action time as line chart
 plt.plot(stats.get_total_reward())
 plt.title("Total Reward over Number of Action")
 plt.xlabel("Number of Action")
 plt.ylabel("Total Reward")
+plt.show()
+
+# Plot heatmap of agent's activity
+level_map = stats.get_heatmap()
+plt.imshow(level_map, cmap="hot", interpolation="nearest")
+plt.colorbar()
+plt.gca().invert_yaxis()
+plt.title("Agent's Activity Heatmap")
 plt.show()
