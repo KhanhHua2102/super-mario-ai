@@ -8,7 +8,7 @@
   <p align="center">
     This project involves building Artificial Intelligence agents to play Gym Super Mario Bros using various algorithms.
     <br />
-    <a href="https://github.com/KhanhHua2102/CITS3403-Project"><strong>Explore the docs »</strong></a>
+    <a href="https://github.com/KhanhHua2102/super-mario-ai"><strong>Explore the docs »</strong></a>
     <br />
     <br />
     <a href="https://github.com/KhanhHua2102/super-mario-ai/">View Demo</a>
