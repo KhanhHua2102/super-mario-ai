@@ -5,6 +5,7 @@ import gym
 import gym_super_mario_bros
 from nes_py.wrappers import JoypadSpace
 
+
 CUSTOM_MOVEMENT = [
     ["NOOP"],
     ["right"],
@@ -12,8 +13,8 @@ CUSTOM_MOVEMENT = [
     ["A"],
 ]
 
-# Suppress all warnings (not recommended for production code)
-warnings.filterwarnings("ignore")
+warnings.filterwarnings("ignore")  # Suppress all warnings
+
 JoypadSpace.reset = lambda self, **kwargs: self.env.reset(**kwargs)
 env = gym.make(
     "SuperMarioBros-1-1-v0", apply_api_compatibility=True, render_mode="human"
@@ -38,6 +39,5 @@ for action in action_list:
         break
 
     time.sleep(DELAY)
-
 
 env.close()

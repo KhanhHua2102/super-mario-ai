@@ -1,11 +1,13 @@
-import hashlib
 import json
-
-import cv2
 import numpy as np
 
 
 class Stat(object):
+    """
+    This class is used to store the statistics of the training and running process.
+    Including the number of actions, total reward and heatmap.
+    """
+
     def __init__(self):
         self.nums_action = 0
         self.total_reward = [0]
@@ -31,6 +33,9 @@ class Stat(object):
 def print_stats(
     curr_episode, curr_total_rewards, curr_time, explore_rate, learning_rate
 ):
+    """
+    This function is used to print the statistics of the training process.
+    """
     print("-------------------------")
     print("Episode: " + str(curr_episode + 1))
     print("Score: " + str(curr_total_rewards))
@@ -41,7 +46,10 @@ def print_stats(
 
 
 def save_q_table(q_table, episode, learning_rate, exploration_rate, file_name):
-    # Save q_table to json file
+    """
+    This function is used to save the q_table and the statistics of the training process
+    inorder to continue the training process.
+    """
     with open(
         f"Q_Learning/train/current_model_{file_name}.json", "w+", encoding="utf-8"
     ) as json_file:

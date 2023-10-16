@@ -1,6 +1,5 @@
 import math
 import warnings
-import copy
 import time
 from typing import Union
 import random
@@ -11,6 +10,7 @@ from nes_py.wrappers import JoypadSpace
 
 from Monte_Carlo.mario_states import Mario_States, Node
 
+
 CUSTOM_MOVEMENT = [
     ["NOOP"],
     ["right"],
@@ -20,7 +20,8 @@ CUSTOM_MOVEMENT = [
 
 ACTION_SIZE = len(CUSTOM_MOVEMENT)
 
-warnings.filterwarnings("ignore")
+
+warnings.filterwarnings("ignore")  # Suppress all warnings
 
 
 def select(node: Node) -> Node:
@@ -135,7 +136,6 @@ def MCTS(
         print("\niteration:", iteration + 1)
 
         node = root_node
-        # limit = limit_per_iteration
 
         env.reset()
 
@@ -170,8 +170,8 @@ env = gym.make(
     "SuperMarioBros-1-1-v0", apply_api_compatibility=True, render_mode="rgb_array"
 )
 env = JoypadSpace(env, CUSTOM_MOVEMENT)
-
 env.reset()
+
 obs, reward, terminated, truncated, info = env.step(0)
 
 

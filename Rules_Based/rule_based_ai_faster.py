@@ -1,7 +1,5 @@
 import time
 import warnings
-import subprocess
-import timeit
 
 import gym
 import gym_super_mario_bros
@@ -10,7 +8,6 @@ from nes_py.wrappers import JoypadSpace
 import matplotlib.pyplot as plt
 import numpy as np
 
-import mario_actions as ac
 from Image_Detection.detectors import (
     exist_enemy,
     exist_left_brick,
@@ -33,7 +30,7 @@ CUSTOM_MOVEMENT = [
     ["right", "B"],
 ]
 
-# Suppress all warnings (not recommended for production code)
+# Suppress all warnings
 warnings.filterwarnings("ignore")
 
 # Environment setup
@@ -43,13 +40,12 @@ env = gym.make(
 )
 env = JoypadSpace(env, CUSTOM_MOVEMENT)
 
-delay = 0.00
+delay = 0  # Delay between each action
 done = False
 env.reset()
 obs, reward, terminated, truncated, info = env.step(0)
 x_mario = mario_loc_detect(obs)[0]
 x_mario_list = []
-
 
 # ------------------------------------------------------------
 
@@ -57,8 +53,45 @@ x_mario_list = []
 stats = Stat()
 
 
-# Take action if enemy is in front of mario
+def low_jump(env, times, delay):
+    """
+    Define a set of actions to make mario jump low
+    """
+    obs, reward, terminated, truncated, info = None, None, None, None, None
+    for _ in range(times):
+        env.step(2)
+        time.sleep(delay)
+        # wait for mario to fall
+        for _ in range(14):
+            env.step(0)
+            time.sleep(delay)
+        obs, reward, terminated, truncated, info = env.step(0)
+
+    return obs, reward, terminated, truncated, info
+
+
+def high_jump(env, times, delay):
+    """
+    Define a set of actions to make mario jump high
+    """
+    obs, reward, terminated, truncated, info = None, None, None, None, None
+    for _ in range(times):
+        for _ in range(20):
+            env.step(2)
+            time.sleep(delay)
+        # wait for mario to fall
+        for _ in range(17):
+            env.step(0)
+            time.sleep(delay)
+        obs, reward, terminated, truncated, info = env.step(0)
+
+    return obs, reward, terminated, truncated, info
+
+
 def enemy_react(obs, x_mario, y_mario, env, delay):
+    """
+    Take action if enemy is in front of mario
+    """
     enemy_locs = exist_enemy(obs)
     if len(enemy_locs) > 0:
         loc_list = [loc for loc in enemy_locs if loc[0] > x_mario]
@@ -85,8 +118,10 @@ def enemy_react(obs, x_mario, y_mario, env, delay):
     return False, None, None, None, None, None
 
 
-# Take action if turtle is in front of mario
 def turtle_react(obs, x_mario, y_mario, env, delay):
+    """
+    Take action if turtle is in front of mario
+    """
     turle_x, turle_y = exist_turtle(obs)
     if (
         turle_x is not None
@@ -102,8 +137,10 @@ def turtle_react(obs, x_mario, y_mario, env, delay):
     return False, None, None, None, None, None
 
 
-# Take action if pipe is in front of mario
 def pipe_react(obs, x_mario, y_mario, env, delay):
+    """
+    Take action if pipe is in front of mario
+    """
     pipe_values = exist_pipe(obs)
     x_pipe, y_pipe = find_nearest_pipe(x_mario, pipe_values)
 
@@ -143,8 +180,10 @@ def pipe_react(obs, x_mario, y_mario, env, delay):
     return False, None, None, None, None, None
 
 
-# Take action if small hole is in front of mario
 def hole_react(obs, x_mario, y_mario, env, delay):
+    """
+    Take action if small hole is in front of mario
+    """
     small_hole = exist_small_hole(obs)
     if (
         small_hole != (None, None)
@@ -161,20 +200,24 @@ def hole_react(obs, x_mario, y_mario, env, delay):
     return False, None, None, None, None, None
 
 
-# Take action if left brick is in front of mario
 def left_brick_react(obs, x_mario, env, delay):
+    """
+    Take action if left brick is in front of mario
+    """
     left_brick = exist_left_brick(x_mario, obs)
     if left_brick != (None, None):
         if left_brick[0] - x_mario <= 50 and left_brick[0] - x_mario > -30:
-            obs, reward, terminated, truncated, info = ac.high_jump(env, 2, delay)
+            obs, reward, terminated, truncated, info = high_jump(env, 2, delay)
             stats.update(reward, x_mario, y_mario)
             time.sleep(delay)
             return True, obs, reward, terminated, truncated, info
     return False, None, None, None, None, None
 
 
-# Take action if right brick is in front of mario
 def right_brick_react(obs, x_mario, env, delay):
+    """
+    Take action if right brick staircase is in front of mario
+    """
     right_brick = exist_right_brick(x_mario, obs)
     if right_brick != (None, None):
         if right_brick[0] - x_mario <= 65 and right_brick[0] - x_mario > -40:
@@ -186,9 +229,11 @@ def right_brick_react(obs, x_mario, env, delay):
     return False, None, None, None, None, None
 
 
-# Return Mario's relative and absolute position
 def mario_location(obs, x_mario):
-    x_tmp, y_tmp = mario_loc_detect(obs)
+    """
+    Return mario's location
+    """
+    x_tmp, _ = mario_loc_detect(obs)
     if x_tmp is not None:
         x_mario = x_tmp
     x_mario_info = info["x_pos"]
@@ -204,7 +249,7 @@ while not done:
         # Mario's position
         x_mario_info, x_mario, y_mario = mario_location(obs, x_mario)
 
-        # If mario stand still for _ steps, jump continuously
+        # If mario stand still for 8 steps, jump continuously
         x_mario_list.insert(0, x_mario_info)
         steps = 8
         stand_still = False
@@ -218,7 +263,7 @@ while not done:
                 stand_still = True
         if stand_still:
             print("\nmario stand still\n")
-            ac.high_jump(env, 3, delay)
+            high_jump(env, 3, delay)
             time.sleep(delay)
 
         # Enemy
@@ -292,7 +337,6 @@ plt.title("Total Reward over Number of Action")
 plt.xlabel("Number of Action")
 plt.ylabel("Total Reward")
 plt.show()
-
 
 # Plot heatmap of agent's activity
 level_map = stats.get_heatmap()
