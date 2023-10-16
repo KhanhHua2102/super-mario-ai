@@ -64,7 +64,7 @@ This project is about building an Artificial Intelligence agent to play Super Ma
 
 ### Prerequisites
 
-- python 3.8 or newer
+- python 3.9 or newer
 - poetry 1.1.4 or newer
 
 ### Installation
