@@ -1,5 +1,3 @@
-import json
-import os
 import random
 import time
 import warnings
@@ -24,10 +22,10 @@ CUSTOM_MOVEMENT = [
 # Environment parameters
 ACTION_SIZE = CUSTOM_MOVEMENT.__len__()
 
-# Suppress all warnings (not recommended for production code)
+# Suppress all warnings
 warnings.filterwarnings("ignore")
+
 JoypadSpace.reset = lambda self, **kwargs: self.env.reset(**kwargs)
-# Create the base environment
 env = gym.make(
     "SuperMarioBros-1-1-v3", apply_api_compatibility=True, render_mode="human"
 )
@@ -38,6 +36,9 @@ env = JoypadSpace(env, CUSTOM_MOVEMENT)
 
 
 def get_max_action(input_obs, input_q_table) -> int:
+    """
+    Get the action with the highest Q value for the given state.
+    """
     max_action = -1
     if len(input_q_table) == 0:
         return -1
@@ -52,6 +53,9 @@ def get_max_action(input_obs, input_q_table) -> int:
 
 
 def get_max_value(input_obs, input_q_table) -> float:
+    """
+    Get the highest Q value for the given state.
+    """
     max_value = 0
     if len(input_q_table) == 0:
         return -1
@@ -75,21 +79,6 @@ rewards = []
 q_table = {}
 
 start_episode = 0
-
-# if os.path.exists("Q_Learning/train/current_model_obs.json") and os.path.exists(
-#     "Q_Learning/train/model_statistics_obs.json"
-# ):
-#     with open("Q_Learning/train/model_statistics_obs.json", "r") as f:
-#         conf = json.load(f)
-#         if conf["iterations"] > 0:
-#             start_episode = conf["iterations"]
-#             if conf["learning_rate"] > 0:
-#                 learning_rate = conf["learning_rate"]
-#             if conf["exploration_rate"] > 0:
-#                 exploration_rate = conf["exploration_rate"]
-#     # This is the AI model started
-#     with open("Q_Learning/train/current_model_obs.json", "r") as f:
-#         q_table = json.load(f)
 
 
 def main():
@@ -146,7 +135,6 @@ def main():
                 q_table[pair] = 0
             else:
                 # Update Q(s,a)= Q(s,a) + lr [R(s,a) + gamma * max Q(s',a') - Q(s,a)]
-                # qtable[state,action] = qtable[state,action] + learning_rate * (reward + discount_rate * np.max(qtable[new_state,:])-qtable[state,action])
                 q_table[pair] += learning_rate * (
                     reward + GAMMA * get_max_value(new_state, q_table) - old_value
                 )

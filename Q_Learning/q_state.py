@@ -1,5 +1,3 @@
-import json
-import os
 import random
 import time
 import warnings
@@ -34,10 +32,10 @@ CUSTOM_MOVEMENT = [
 # Environment parameters
 ACTION_SIZE = CUSTOM_MOVEMENT.__len__()
 
-# Suppress all warnings (not recommended for production code)
+# Suppress all warnings
 warnings.filterwarnings("ignore")
+
 JoypadSpace.reset = lambda self, **kwargs: self.env.reset(**kwargs)
-# Create the base environment
 env = gym.make(
     "SuperMarioBros-1-1-v3", apply_api_compatibility=True, render_mode="human"
 )
@@ -47,6 +45,9 @@ env = JoypadSpace(env, CUSTOM_MOVEMENT)
 
 
 def get_state(input_obs) -> str:
+    """
+    Return the predefined states based on environmental observations.
+    """
     mario_loc = mario_loc_detect(input_obs)
     enemy_loc = exist_enemy(input_obs)
     turtle_loc = exist_turtle(input_obs)
@@ -69,6 +70,9 @@ def get_state(input_obs) -> str:
 
 
 def get_max_action(input_state, input_q_table) -> int:
+    """
+    Get the action with the highest Q value for the given state.
+    """
     max_action = -1
     if len(input_q_table) == 0:
         print("Q table is empty")
@@ -84,6 +88,9 @@ def get_max_action(input_state, input_q_table) -> int:
 
 
 def get_max_value(input_state, input_q_table) -> float:
+    """
+    Get the highest Q value for the given state.
+    """
     max_value = 0
     if len(input_q_table) == 0:
         print("Q table is empty")
@@ -126,21 +133,6 @@ def main():
     q_table = {}
 
     start_episode = 0
-
-    # if os.path.exists("Q_Learning/train/current_model_state.json") and os.path.exists(
-    #     "Q_Learning/train/model_statistics_state.json"
-    # ):
-    #     with open("Q_Learning/train/model_statistics_state.json", "r") as f:
-    #         conf = json.load(f)
-    #         if conf["iterations"] > 0:
-    #             start_episode = conf["iterations"]
-    #             if conf["learning_rate"] > 0:
-    #                 learning_rate = conf["learning_rate"]
-    #             if conf["exploration_rate"] > 0:
-    #                 exploration_rate = conf["exploration_rate"]
-    #     # This is the AI model started
-    #     with open("Q_Learning/train/current_model_state.json", "r") as f:
-    #         q_table = json.load(f)
 
     for episode in range(start_episode, TOTAL_EPISODES):
         env.reset()

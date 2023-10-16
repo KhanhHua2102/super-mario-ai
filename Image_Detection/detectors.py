@@ -3,6 +3,9 @@ import numpy as np
 
 
 def mario_loc_detect(obs) -> tuple:
+    """
+    Return the location of Mario in the observation.
+    """
     # Convert the observation to BGR format for cv2 library
     obs_img = cv2.cvtColor(obs, cv2.COLOR_RGB2BGR)
 
@@ -12,7 +15,7 @@ def mario_loc_detect(obs) -> tuple:
     mask = cv2.inRange(obs_img, low, high)
 
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    # Area of
+
     for contour in contours:
         if cv2.contourArea(contour) < 33 and cv2.contourArea(contour) > 0:
             x, y, w, h = cv2.boundingRect(contour)
@@ -24,6 +27,9 @@ def mario_loc_detect(obs) -> tuple:
 
 
 def exist_enemy(obs) -> list[tuple]:
+    """
+    return the location of the enemy in the observation.
+    """
     enemy_locs = []
     # Convert the observation to BGR format for cv2 library
     obs_img = cv2.cvtColor(obs, cv2.COLOR_RGB2BGR)
@@ -48,6 +54,9 @@ def exist_enemy(obs) -> list[tuple]:
 
 
 def exist_turtle(obs) -> tuple:
+    """
+    Return the location of the turtle in the observation.
+    """
     # Convert the observation to BGR format for cv2 library
     obs_img = cv2.cvtColor(obs, cv2.COLOR_RGB2BGR)
 
@@ -71,6 +80,9 @@ def exist_turtle(obs) -> tuple:
 
 
 def exist_pipe(obs) -> list[tuple]:
+    """
+    Return the location of the pipe in the observation.
+    """
     # Convert the observation to BGR format for cv2 library
     obs_img = cv2.cvtColor(obs, cv2.COLOR_RGB2BGR)
 
@@ -82,6 +94,7 @@ def exist_pipe(obs) -> list[tuple]:
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     pipe_values = []
     center_x, center_y = 0, 0
+
     # Area of pipe: 137.5
     for contour in contours:
         if cv2.contourArea(contour) < 140 and cv2.contourArea(contour) > 135:
@@ -94,6 +107,10 @@ def exist_pipe(obs) -> list[tuple]:
 
 
 def find_nearest_pipe(mario_x, pipe_values) -> tuple:
+    """
+    Return the location of the nearest pipe in the observation.
+    """
+
     if len(pipe_values) == 0:
         return None, None
 
@@ -119,12 +136,13 @@ def find_nearest_pipe(mario_x, pipe_values) -> tuple:
 
 
 def exist_small_hole(obs) -> tuple:
+    """
+    Return the location of the small hole in the observation.
+    """
+
     obs_img = cv2.cvtColor(obs, cv2.COLOR_RGB2BGR)
     # Read the template
     template = cv2.imread("./Image_Detection/templates/hole.png")
-
-    # Loop through all the matching methods
-    # match_method = [cv2.TM_SQDIFF, cv2.TM_SQDIFF_NORMED, cv2.TM_CCOEFF, cv2.TM_CCOEFF_NORMED]
 
     result = cv2.matchTemplate(obs_img, template, cv2.TM_CCOEFF)
     cv2.normalize(result, result, 0, 1, cv2.NORM_MINMAX, -1)
@@ -133,15 +151,16 @@ def exist_small_hole(obs) -> tuple:
     min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
     matchLoc = max_loc
 
-    # pt1 = matchLoc
-    # pt2 = matchLoc[0] + template.shape[0], matchLoc[1] + template.shape[1]
-
     if matchLoc[1] > 189:
         return matchLoc[0], matchLoc[1]
     return None, None
 
 
 def exist_left_brick(mario_x, obs):
+    """
+    Return the location of the left brick in the observation.
+    """
+
     obs_img = cv2.cvtColor(obs, cv2.COLOR_RGB2BGR)
     # Read the template
     template = cv2.imread("./Image_Detection/templates/left_brick.png")
@@ -159,6 +178,10 @@ def exist_left_brick(mario_x, obs):
 
 
 def exist_right_brick(mario_x, obs):
+    """
+    Return the location of the right brick in the observation.
+    """
+
     obs_img = cv2.cvtColor(obs, cv2.COLOR_RGB2BGR)
     # Read the template
     template = cv2.imread("./Image_Detection/templates/right_brick.png")

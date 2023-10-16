@@ -10,20 +10,16 @@ from stable_baselines3 import PPO
 from stable_baselines3.common.callbacks import BaseCallback
 from stable_baselines3.common.vec_env import DummyVecEnv, VecFrameStack
 
-warnings.filterwarnings("ignore")
+
+warnings.filterwarnings("ignore")  # Suppress all warnings
 JoypadSpace.reset = lambda self, **kwargs: self.env.reset(**kwargs)
 
-# 1. Create the base environment
 env = gym.make(
     "SuperMarioBros-1-1-v3", apply_api_compatibility=True, render_mode="rgb_array"
 )
-# 2. Simplify the controls
 env = JoypadSpace(env, SIMPLE_MOVEMENT)
-# 3. Grayscale
 env = GrayScaleObservation(env, keep_dim=True)
-# 4. Wrap inside the Dummy Environment
 env = DummyVecEnv([lambda: env])
-# 5. Stack the frames
 env = VecFrameStack(env, 4, channels_order="last")
 
 env.reset()
@@ -63,10 +59,8 @@ class TrainAndLoggingCallback(BaseCallback):
 CHECKPOINT_DIR = "./PPO/train/"
 LOG_DIR = "./PPO/logs/"
 
-# Setup model saving callback
 callback = TrainAndLoggingCallback(check_freq=CHECK_FREQ, save_path=CHECKPOINT_DIR)
 
-# This is the AI model started
 model = PPO(
     "CnnPolicy",
     env,
@@ -78,7 +72,6 @@ model = PPO(
 
 # ----------------------------------------------------------
 
-# Train the AI model, this is where the AI model starts to learn
 model.learn(total_timesteps=TOTAL_TIMESTEPS, callback=callback)
 
 model.save("thisisatestmodel")

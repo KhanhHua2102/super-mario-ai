@@ -2,6 +2,10 @@ CUSTOM_MOVEMENT = [["NOOP"], ["right"], ["right", "A"], ["A"]]
 
 
 class Mario_States:
+    """
+    Class representing the state of one node in the tree.
+    """
+
     def __init__(self, obs, reward, terminated, truncated, info, action):
         self.obs = obs
         self.reward = reward
